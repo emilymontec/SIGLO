@@ -44,7 +44,11 @@ def register_view(request):
             from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
             to=[user.email],
         )
-        email.send(fail_silently=not settings.DEBUG)
+        try:
+            email.send(fail_silently=False)
+        except Exception:
+            if settings.DEBUG:
+                raise
 
         return render(
             request,

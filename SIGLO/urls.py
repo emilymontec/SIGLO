@@ -17,9 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.contrib.auth import logout
 from django.shortcuts import redirect
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.static import serve
 
 from PROJECT_INFO import views as project_views
 from LOTES.views import (
@@ -93,4 +94,12 @@ urlpatterns = [
     path('accounts/logout/', logout_view),
     path('accounts/profile/', profile_redirect, name='profile'),
     path('accounts/', include('django.contrib.auth.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+else:
+    media_url = settings.MEDIA_URL.lstrip("/")
+    urlpatterns += [
+        re_path(r"^%s(?P<path>.*)$" % media_url, serve, {"document_root": settings.MEDIA_ROOT}),
+    ]

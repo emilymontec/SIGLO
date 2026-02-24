@@ -62,6 +62,10 @@ def register_view(request):
             },
         )
     return render(request, "users/register.html", {"form": form})
+    if form.is_valid():
+        print("FORM VALID ✅")
+    else:
+        print("FORM ERRORS ❌", form.errors)
 
 
 @login_required

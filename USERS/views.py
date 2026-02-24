@@ -158,4 +158,6 @@ def send_email_resend(to_email, subject, html_content):
             "html": html_content,
         },
     )
+    print("RESEND STATUS:", response.status_code)
+    print("RESEND RESPONSE:", response.text)
     return response.status_code

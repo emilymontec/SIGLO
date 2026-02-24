@@ -1,16 +1,14 @@
-from django.contrib import messages
-from django.contrib.auth import login, get_user_model, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect
-from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.core.mail import EmailMessage
 from django.conf import settings
-
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
 from .forms import EmailUserCreationForm
-import requests
-from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+
 
 def register_view(request):
     form = EmailUserCreationForm(request.POST or None)
@@ -49,13 +47,19 @@ Si no solicitaste esta cuenta, ignora este correo.
                 [user.email],
             )
 
-            email.send(fail_silently=False)
+            try:
+                email.send(fail_silently=False)
+            except Exception as e:
+                if settings.DEBUG:
+                    print("ERROR AL ENVIAR CORREO:", e)
 
             return render(
                 request,
                 "users/registration_pending.html",
                 {"email": user.email},
             )
+        else:
+            print("FORM ERRORS ❌", form.errors)
 
     return render(request, "users/register.html", {"form": form})
 

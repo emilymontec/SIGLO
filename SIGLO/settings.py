@@ -172,3 +172,12 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
 
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.DEBUG: 'secondary',
+    messages.INFO: 'info',
+    messages.SUCCESS: 'success',
+    messages.WARNING: 'warning',
+    messages.ERROR: 'danger',
+}

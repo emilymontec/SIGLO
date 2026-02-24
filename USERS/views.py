@@ -16,51 +16,67 @@ def register_view(request):
 
     if request.method == "POST":
         if form.is_valid():
-            user = form.save(commit=False)
-            user.is_active = False
-            user.role = "CLIENT"
-            user.save()
-
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
-            token = default_token_generator.make_token(user)
-
-            activation_link = request.build_absolute_uri(
-                f"/cuenta/activar/{uid}/{token}/"
-            )
-
-            subject = "Activa tu cuenta en SIGLO"
-            body = f"""
-Hola,
-
-Gracias por registrarte en SIGLO.
-
-Para activar tu cuenta haz clic en el siguiente enlace:
-
-{activation_link}
-
-Si no solicitaste esta cuenta, ignora este correo.
-"""
-
-            email = EmailMessage(
-                subject,
-                body,
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-            )
-
             try:
-                email.send(fail_silently=False)
-            except Exception as e:
-                if settings.DEBUG:
-                    print("ERROR AL ENVIAR CORREO:", e)
+                user = form.save(commit=False)
+                user.is_active = False
+                user.role = "CLIENT"
+                user.save()
 
-            return render(
-                request,
-                "users/registration_pending.html",
-                {"email": user.email},
-            )
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+
+                activation_link = request.build_absolute_uri(
+                    f"/cuenta/activar/{uid}/{token}/"
+                )
+
+                subject = "Activa tu cuenta en SIGLO"
+                html_content = f"""
+                <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h2 style="color: #333;">Bienvenido a SIGLO</h2>
+                    <p>Gracias por registrarte. Para activar tu cuenta, haz clic en el botón de abajo:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="{activation_link}" style="background-color: #000; color: #fff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Activar mi cuenta</a>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+                    <p style="color: #007bff; font-size: 12px;">{activation_link}</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                    <p style="color: #999; font-size: 12px;">Si no solicitaste esta cuenta, puedes ignorar este correo.</p>
+                </div>
+                """
+
+                # Intentar enviar con Resend API primero
+                status_code = send_email_resend(user.email, subject, html_content)
+
+                if status_code not in [200, 201]:
+                    # Si falla Resend API, intentar con el backend de Django (SMTP)
+                    body = f"Hola,\n\nPara activar tu cuenta haz clic en el siguiente enlace:\n\n{activation_link}"
+                    email = EmailMessage(
+                        subject,
+                        body,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user.email],
+                    )
+                    email.send(fail_silently=True)
+
+                return render(
+                    request,
+                    "users/registration_pending.html",
+                    {
+                        "email": user.email,
+                        "activation_link": activation_link if settings.DEBUG else None,
+                        "debug": settings.DEBUG
+                    },
+                )
+            except Exception as e:
+                print("ERROR EN REGISTRO:", e)
+                messages.error(request, "Hubo un error al procesar tu registro. Por favor intenta de nuevo.")
+                if settings.DEBUG:
+                    messages.error(request, f"Detalle técnico: {str(e)}")
         else:
             print("FORM ERRORS ❌", form.errors)
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
 
     return render(request, "users/register.html", {"form": form})
 
@@ -145,6 +161,11 @@ def profile_view(request):
     return render(request, "users/profile.html", context)
 
 def send_email_resend(to_email, subject, html_content):
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "onboarding@resend.dev")
+    
+    # Si estamos en modo onboarding y no es el correo del dueño, Resend fallará.
+    # Pero intentamos usar el remitente configurado.
+    
     response = requests.post(
         "https://api.resend.com/emails",
         headers={
@@ -152,7 +173,7 @@ def send_email_resend(to_email, subject, html_content):
             "Content-Type": "application/json",
         },
         json={
-            "from": "onboarding@resend.dev",
+            "from": from_email,
             "to": [to_email],
             "subject": subject,
             "html": html_content,

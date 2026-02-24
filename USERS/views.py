@@ -9,6 +9,8 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 
 from .forms import EmailUserCreationForm
+import requests
+from django.conf import settings
 
 
 def register_view(request):
@@ -141,3 +143,19 @@ def profile_view(request):
         }
     }
     return render(request, "users/profile.html", context)
+
+def send_email_resend(to_email, subject, html_content):
+    response = requests.post(
+        "https://api.resend.com/emails",
+        headers={
+            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "from": "onboarding@resend.dev",
+            "to": [to_email],
+            "subject": subject,
+            "html": html_content,
+        },
+    )
+    return response.status_code

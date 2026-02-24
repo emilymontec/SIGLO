@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,28 +20,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-4kmnid)yqhjrt*7^nny+b-o5^9sp%al$opup3wn#d4!=i$!a+t",
-)
+SECRET_KEY = 'django-insecure-4kmnid)yqhjrt*7^nny+b-o5^9sp%al$opup3wn#d4!=i$!a+t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "True") == "True"
+DEBUG = True
 
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS",
-    ".onrender.com,localhost,127.0.0.1",
-).split(",")
-
-CSRF_TRUSTED_ORIGINS = []
-for host in ALLOWED_HOSTS:
-    if host.startswith("."):
-        CSRF_TRUSTED_ORIGINS.append(f"https://*{host}")
-    else:
-        CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
-
-if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
-    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}")
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -70,9 +53,11 @@ PASSWORD_HASHERS = [
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'no-reply@siglo.local'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -104,12 +89,11 @@ WSGI_APPLICATION = 'SIGLO.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-import dj_database_url
-
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 
@@ -147,37 +131,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = 'static/'
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
-
-MEDIA_URL = '/media/'
+MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
-os.makedirs(MEDIA_ROOT, exist_ok=True)
-os.makedirs(STATIC_ROOT, exist_ok=True)
-
-
-if os.environ.get("EMAIL_HOST"):
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-EMAIL_HOST = os.environ.get("EMAIL_HOST")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
-
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
-
-from django.contrib.messages import constants as messages
-MESSAGE_TAGS = {
-    messages.DEBUG: 'secondary',
-    messages.INFO: 'info',
-    messages.SUCCESS: 'success',
-    messages.WARNING: 'warning',
-    messages.ERROR: 'danger',
-}

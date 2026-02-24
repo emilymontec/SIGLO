@@ -12,7 +12,6 @@ from .forms import EmailUserCreationForm
 import requests
 from django.conf import settings
 
-print("REGISTER VIEW EJECUTANDO 🔥")
 def register_view(request):
     form = EmailUserCreationForm(request.POST or None)
     if form.is_valid():
@@ -46,6 +45,7 @@ def register_view(request):
             from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
             to=[user.email],
         )
+        print("Intentando enviar correo a:", user.email)
         try:
             email.send(fail_silently=False)
         except Exception:
@@ -60,12 +60,15 @@ def register_view(request):
                 "activation_link": activation_link,
                 "debug": settings.DEBUG,
             },
+        if request.method == "POST":
+            form = RegisterForm(request.POST)
+            if form.is_valid():
+                print("FORM VALID ✅")
+        else:
+            print("FORM ERRORS ❌", form.errors)
+        print("Correo enviado correctamente")
         )
     return render(request, "users/register.html", {"form": form})
-    if form.is_valid():
-        print("FORM VALID ✅")
-    else:
-        print("FORM ERRORS ❌", form.errors)
 
 
 @login_required

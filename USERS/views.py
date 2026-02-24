@@ -12,7 +12,7 @@ from .forms import EmailUserCreationForm
 import requests
 from django.conf import settings
 
-
+print("REGISTER VIEW EJECUTANDO 🔥")
 def register_view(request):
     form = EmailUserCreationForm(request.POST or None)
     if form.is_valid():

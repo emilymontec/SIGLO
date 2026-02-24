@@ -169,7 +169,7 @@ def register_payment(request, purchase_id):
                         content=pdf_bytes,
                         mimetype="application/pdf",
                     )
-                except ImportError:
+                except (ImportError, NameError):
                     email.attach(
                         filename=f"comprobante_pago_{payment.id}.txt",
                         content=attachment_content,

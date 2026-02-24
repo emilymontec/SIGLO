@@ -34,6 +34,16 @@ ALLOWED_HOSTS = os.environ.get(
     ".onrender.com,localhost,127.0.0.1",
 ).split(",")
 
+CSRF_TRUSTED_ORIGINS = []
+for host in ALLOWED_HOSTS:
+    if host.startswith("."):
+        CSRF_TRUSTED_ORIGINS.append(f"https://*{host}")
+    else:
+        CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
+
+if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME')}")
+
 
 # Application definition
 
@@ -140,13 +150,19 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(STATIC_ROOT, exist_ok=True)
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+if os.environ.get("EMAIL_HOST"):
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", 587))
@@ -154,5 +170,5 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS") == "True"
 
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "webmaster@localhost")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")

@@ -1,0 +1,134 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-3 mb-4 align-items-center">
+        <div class="col-lg-8" data-aos="fade-up">
+            <h1 class="h3 fw-bold text-dark mb-1">Panel administrativo</h1>
+            <p class="text-muted small mb-0">
+                Visión general del proyecto: usuarios, lotes, flujo financiero y soporte.
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end" data-aos="fade-up" data-aos-delay="50">
+            <a href="{% url 'lot_list' %}" class="btn btn-premium btn-sm px-3 me-2 mb-2">
+                Ver plataforma pública
+            </a>
+            <a href="{% url 'admin_lot_list' %}" class="btn btn-accent btn-sm px-3 mb-2">
+                Gestionar lotes
+            </a>
+        </div>
+    </div>
+
+    {% if project %}
+    <div class="row g-3 mb-4">
+        <div class="col-12" data-aos="fade-up" data-aos-delay="50">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <p class="text-muted extra-small text-uppercase mb-1 fw-bold">Descripción del proyecto</p>
+                <h2 class="h5 fw-bold text-dark mb-2">{{ project.title }}</h2>
+                <p class="small text-muted mb-0">{{ project.description }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="0">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <p class="text-muted extra-small text-uppercase mb-1 fw-bold">Usuarios</p>
+                <h2 class="h4 fw-bold mb-0 text-dark">{{ users_total }}</h2>
+                <span class="extra-small text-muted">Admins: {{ admins_total }} · Clientes: {{ clients_total }}</span>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="50">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <p class="text-muted extra-small text-uppercase mb-1 fw-bold">Inventario</p>
+                <h2 class="h4 fw-bold mb-0 text-dark">{{ lots_total }}</h2>
+                <span class="extra-small text-muted">Disponibles: {{ lots_available }} · Vendidos: {{ lots_sold }}</span>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="100">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <p class="text-muted extra-small text-uppercase mb-1 fw-bold">Ventas acumuladas</p>
+                <h2 class="h4 fw-bold mb-0 text-accent">${{ total_purchase_amount }}</h2>
+                <span class="extra-small text-muted">Compras registradas: {{ purchases_total }}</span>
+            </div>
+        </div>
+        <div class="col-md-3" data-aos="fade-up" data-aos-delay="150">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <p class="text-muted extra-small text-uppercase mb-1 fw-bold">PQRS</p>
+                <h2 class="h4 fw-bold mb-0 text-dark">{{ pqrs_total }}</h2>
+                <span class="extra-small text-muted">Abiertas: {{ pqrs_open }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="0">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h2 class="h6 fw-bold text-uppercase text-muted mb-1">Lotes y etapas</h2>
+                        <p class="mb-0 extra-small text-muted">Catálogo, estados y etapas del proyecto.</p>
+                    </div>
+                    <i class="bi bi-grid-1x2 fs-3 text-dark"></i>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_lot_list' %}" class="btn btn-outline-dark w-100">
+                        Gestionar lotes
+                    </a>
+                    <a href="{% url 'admin_stage_list' %}" class="btn btn-outline-dark w-100">
+                        Gestionar etapas
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="50">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h2 class="h6 fw-bold text-uppercase text-muted mb-1">Compras y pagos</h2>
+                        <p class="mb-0 extra-small text-muted">Control del flujo financiero.</p>
+                    </div>
+                    <i class="bi bi-cash-coin fs-3 text-dark"></i>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_purchase_list' %}" class="btn btn-outline-dark w-100">
+                        Ver compras
+                    </a>
+                    <a href="{% url 'admin_payment_list' %}" class="btn btn-outline-dark w-100">
+                        Ver pagos
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+            <div class="premium-card h-100 border-0 shadow-sm">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <h2 class="h6 fw-bold text-uppercase text-muted mb-1">Soporte y contenido</h2>
+                        <p class="mb-0 extra-small text-muted">PQRS y comunicación del proyecto.</p>
+                    </div>
+                    <i class="bi bi-inbox fs-3 text-dark"></i>
+                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'admin_pqrs_list' %}" class="btn btn-outline-dark w-100">
+                        Ver todas las PQRS
+                    </a>
+                    <a href="{% url 'admin_content' %}" class="btn btn-outline-dark w-100">
+                        Contenido del proyecto
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+<footer class="py-3 mt-4 border-top border-dark border-opacity-5" style="background: white;">
+    <div class="container d-flex justify-content-between align-items-center small text-muted">
+        <span>Panel administrativo</span>
+        <span>&copy; 2026 SIGLO</span>
+    </div>
+</footer>
+{% endblock %}

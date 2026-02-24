@@ -1,0 +1,71 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">Compras registradas</h1>
+            <p class="text-muted small mb-0">Listado consolidado de compras de lotes por cliente.</p>
+        </div>
+        <a href="{% url 'admin_purchase_create' %}" class="btn btn-accent btn-sm px-3">
+            <i class="bi bi-plus-lg me-1"></i> Nueva compra
+        </a>
+    </div>
+
+    <div class="premium-card p-0 overflow-hidden shadow-lg">
+        {% if purchases %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="color: var(--text-main);">
+                <thead>
+                    <tr class="border-white border-opacity-10">
+                        <th class="py-3 ps-4 text-muted extra-small text-uppercase fw-bold">ID</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Cliente</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Lotes</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Total</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Saldo</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Fecha</th>
+                        <th class="py-3 pe-4 text-end text-muted extra-small text-uppercase fw-bold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                    <tr class="border-white border-opacity-5">
+                        <td class="py-3 ps-4 fw-bold text-primary">#{{ purchase.id }}</td>
+                        <td class="py-3 small">
+                            {{ purchase.client.get_full_name|default:purchase.client.email }}
+                        </td>
+                        <td class="py-3 small">
+                            {% for lot in purchase.lots.all %}
+                            <span class="badge bg-light text-dark border px-2 py-1 rounded-pill extra-small">
+                                {{ lot.code }}
+                            </span>
+                            {% empty %}
+                            <span class="text-muted extra-small">Sin lotes</span>
+                            {% endfor %}
+                        </td>
+                        <td class="py-3 small">${{ purchase.total_amount }}</td>
+                        <td class="py-3 small">${{ purchase.balance }}</td>
+                        <td class="py-3 small text-muted">{{ purchase.created_at }}</td>
+                        <td class="py-3 pe-4 text-end">
+                            <a href="{% url 'admin_purchase_edit' purchase.id %}"
+                                class="btn btn-outline-dark btn-sm rounded-pill px-3 extra-small">
+                                Editar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <div class="mb-4 d-inline-block p-4 rounded-circle"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);">
+                <i class="bi bi-card-checklist display-3 text-muted opacity-25"></i>
+            </div>
+            <p class="mb-0 text-muted fw-medium h5">No hay compras registradas.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

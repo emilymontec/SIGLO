@@ -1,0 +1,157 @@
+{% extends "index.html" %}
+
+{% block content %}
+<section class="hero-section py-5 mb-5">
+    <div class="container py-lg-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7" data-aos="fade-up">
+                <div class="glass-badge mb-4">
+                    <i class="bi bi-stars"></i>
+                    Innovación Inmobiliaria
+                </div>
+                <h1 class="hero-title">
+                    {{ project.title|default:"Transformando el " }} <span>Futuro</span> del Urbanismo
+                </h1>
+                <p class="lead text-muted mb-5 pe-lg-5 fw-medium">
+                    {% if project and project.description %}
+                        {{ project.description }}
+                    {% else %}
+                        Descubre una nueva forma de gestionar y adquirir lotes con tecnología de vanguardia. SIGLO conecta
+                        la visión arquitectónica con la eficiencia digital.
+                    {% endif %}
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'lot_list' %}" class="btn btn-accent px-5">
+                        Explorar Catálogo <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    <a href="{% url 'lot_map' %}" class="btn btn-premium px-5">
+                        Ver Mapa <i class="bi bi-map ms-2"></i>
+                    </a>
+                </div>
+
+                <div class="mt-5 pt-4 d-flex align-items-center gap-5 text-muted">
+                    <div class="d-flex flex-column text-center">
+                        <span class="h2 fw-bold text-dark mb-0">500+</span>
+                        <span class="small text-uppercase fw-bold tracking-wider">Alquilados</span>
+                    </div>
+                    <div class="vr" style="opacity: 0.1;"></div>
+                    <div class="d-flex flex-column text-center">
+                        <span class="h2 fw-bold text-dark mb-0">98%</span>
+                        <span class="small text-uppercase fw-bold tracking-wider">Éxito</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5" data-aos="fade-up" data-aos-delay="200">
+                <div class="premium-card p-0 border-0 shadow-lg overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&q=80&w=1000"
+                        alt="Real Estate"
+                        class="w-100 h-100 object-fit-cover transition-transform duration-700 hover-scale"
+                        style="min-height: 450px;">
+                    <div class="position-absolute bottom-0 start-0 w-100 p-4 bg-white/90 backdrop-blur">
+                        <h3 class="h5 fw-bold mb-1">Eco-Urbanismo 2026</h3>
+                        <p class="small text-muted fw-bold mb-0">PRÓXIMO LANZAMIENTO</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-6 fw-bold mb-3">Etapas del Proyecto</h2>
+            <p class="text-muted mx-auto" style="max-width: 520px;">
+                Conoce el ciclo de vida: Lanzamiento, Preventa, Construcción y Entrega.
+            </p>
+        </div>
+        <div class="row g-4">
+            {% for stage in stages %}
+            <div class="col-md-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'1' }}00">
+                <div class="premium-card h-100 border-0 shadow-sm text-center">
+                    <div class="mb-3 d-inline-flex align-items-center justify-content-center p-3 bg-light rounded-circle"
+                        style="width: 70px; height: 70px;">
+                        <i class="bi bi-flag fs-2 text-dark"></i>
+                    </div>
+                    <h3 class="h6 fw-bold text-uppercase mb-2">{{ stage.name }}</h3>
+                    <p class="text-muted small">{{ stage.description }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="premium-card border-0 shadow-sm">
+                    <p class="mb-0 text-muted">Aún no se han definido las etapas públicas del proyecto.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+ </section>
+
+<section class="features-section py-5">
+    <div class="container py-4">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-6 fw-bold mb-3">¿Por qué elegir SIGLO?</h2>
+            <p class="text-muted mx-auto" style="max-width: 500px;">Nuestra plataforma integra las mejores herramientas
+                digitales para tu inversión.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="premium-card h-100 border-0 shadow-sm text-center">
+                    <div class="mb-4 d-inline-flex align-items-center justify-content-center p-3 bg-light rounded-circle"
+                        style="width: 70px; height: 70px;">
+                        <i class="bi bi-shield-check fs-2 text-dark"></i>
+                    </div>
+                    <h3 class="h5 fw-bold mb-3">Seguridad</h3>
+                    <p class="text-muted small">Procesos de compra respaldados por estándares de seguridad digital de
+                        alto nivel.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="premium-card h-100 border-0 shadow-sm text-center">
+                    <div class="mb-4 d-inline-flex align-items-center justify-content-center p-3 bg-light rounded-circle"
+                        style="width: 70px; height: 70px;">
+                        <i class="bi bi-lightning-charge fs-2 text-dark"></i>
+                    </div>
+                    <h3 class="h5 fw-bold mb-3">Agilidad</h3>
+                    <p class="text-muted small">Gestiona tus trámites y pagos en segundos desde cualquier lugar del
+                        mundo.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="premium-card h-100 border-0 shadow-sm text-center">
+                    <div class="mb-4 d-inline-flex align-items-center justify-content-center p-3 bg-light rounded-circle"
+                        style="width: 70px; height: 70px;">
+                        <i class="bi bi-graph-up-arrow fs-2 text-dark"></i>
+                    </div>
+                    <h3 class="h5 fw-bold mb-3">Plusvalía</h3>
+                    <p class="text-muted small">Accede a proyectos con alto potencial de retorno en zonas de desarrollo
+                        estratégico.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="cta-section py-5 my-5">
+    <div class="container" data-aos="zoom-in">
+        <div class="premium-card bg-dark text-white p-5 border-0 text-center shadow-2xl">
+            <h2 class="h1 fw-bold mb-4">¿Listo para invertir en tu futuro?</h2>
+            <p class="lead opacity-75 mb-5 mx-auto" style="max-width: 600px;">Únete a cientos de inversionistas que ya
+                están transformando sus ahorros en propiedad raíz.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'register' %}" class="btn btn-accent px-5">Empezar Ahora</a>
+                <a href="{% url 'pqrs_create' %}"
+                    class="btn btn-outline-light px-5 py-3 rounded-3 fw-bold text-uppercase small border-2">Soporte</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+</style>
+{% endblock %}

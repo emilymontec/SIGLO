@@ -1,0 +1,58 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">Pagos registrados</h1>
+            <p class="text-muted small mb-0">Historial de pagos aplicados a compras de lotes.</p>
+        </div>
+        <a href="{% url 'admin_payment_create' %}" class="btn btn-accent btn-sm px-3">
+            <i class="bi bi-plus-lg me-1"></i> Nuevo pago
+        </a>
+    </div>
+
+    <div class="premium-card p-0 overflow-hidden shadow-lg">
+        {% if payments %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="color: var(--text-main);">
+                <thead>
+                    <tr class="border-white border-opacity-10">
+                        <th class="py-3 ps-4 text-muted extra-small text-uppercase fw-bold">ID pago</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Compra</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Cliente</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Monto</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Fecha</th>
+                        <th class="py-3 pe-4 text-end text-muted extra-small text-uppercase fw-bold">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payment in payments %}
+                    <tr class="border-white border-opacity-5">
+                        <td class="py-3 ps-4 fw-bold text-primary">#{{ payment.id }}</td>
+                        <td class="py-3 small">Compra #{{ payment.purchase.id }}</td>
+                        <td class="py-3 small">
+                            {{ payment.purchase.client.get_full_name|default:payment.purchase.client.email }}
+                        </td>
+                        <td class="py-3 small">${{ payment.amount }}</td>
+                        <td class="py-3 small text-muted">{{ payment.payment_date }}</td>
+                        <td class="py-3 pe-4 text-end">
+                            <span class="badge bg-light text-muted extra-small">Registro histórico (no editable)</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <div class="mb-4 d-inline-block p-4 rounded-circle"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);">
+                <i class="bi bi-cash-stack display-3 text-muted opacity-25"></i>
+            </div>
+            <p class="mb-0 text-muted fw-medium h5">No hay pagos registrados.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

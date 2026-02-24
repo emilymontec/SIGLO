@@ -1,0 +1,327 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row g-4 g-lg-5">
+        <!-- Sidebar de lotes -->
+        <div class="col-lg-4" data-aos="fade-up">
+            <div class="premium-card h-100 border-0 shadow-sm p-4">
+                <div class="glass-badge mb-3">
+                    <i class="bi bi-geo-alt-fill me-1" style="color: #FACC15;"></i>Geolocalización
+                </div>
+                <h1 class="h4 fw-bold mb-1 text-dark">Mapa de Activos</h1>
+                <p class="text-muted mb-4 small fw-medium">
+                    Barranquilla, Atlántico · Colombia<br>
+                    Selecciona un lote para centrarlo en el mapa.
+                </p>
+
+                <!-- Estadísticas rápidas -->
+                <div class="row g-2 mb-4">
+                    <div class="col-4 text-center">
+                        <div class="p-2 rounded-3" style="background: rgba(250,204,21,0.12);">
+                            <div class="fw-bold text-dark" id="count-available">–</div>
+                            <div class="small text-muted" style="font-size:0.7rem;">Disponibles</div>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="p-2 rounded-3" style="background: rgba(99,102,241,0.10);">
+                            <div class="fw-bold text-dark" id="count-reserved">–</div>
+                            <div class="small text-muted" style="font-size:0.7rem;">Reservados</div>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="p-2 rounded-3" style="background: rgba(23,23,23,0.07);">
+                            <div class="fw-bold text-dark" id="count-sold">–</div>
+                            <div class="small text-muted" style="font-size:0.7rem;">Vendidos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lista de lotes -->
+                <div class="list-group list-group-flush custom-scroll" style="max-height: 370px; overflow-y: auto;">
+                    {% for lot in lots %}
+                    <div class="lot-item list-group-item bg-transparent border-0 py-3 px-0 rounded-3"
+                         data-lot-id="{{ lot.id }}"
+                         data-lat="{{ lot.latitude }}"
+                         data-lon="{{ lot.longitude }}"
+                         style="cursor:pointer; transition: background 0.2s;">
+                        <div class="d-flex justify-content-between align-items-center px-2">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="status-dot rounded-circle flex-shrink-0"
+                                      style="width:10px; height:10px; display:inline-block;
+                                             background: {% if lot.status == 'AVAILABLE' %}#FACC15{% elif lot.status == 'RESERVED' %}#818CF8{% else %}#171717{% endif %};
+                                             box-shadow: 0 0 6px {% if lot.status == 'AVAILABLE' %}rgba(250,204,21,0.6){% elif lot.status == 'RESERVED' %}rgba(129,140,248,0.6){% else %}rgba(23,23,23,0.4){% endif %};">
+                                </span>
+                                <div>
+                                    <h6 class="mb-0 fw-bold text-dark" style="font-size:0.9rem;">Lote {{ lot.code }}</h6>
+                                    <small class="text-muted">{{ lot.stage.name }} · {{ lot.area_m2 }} m²</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge rounded-pill px-3 py-2 small fw-bold"
+                                      style="background:{% if lot.status == 'AVAILABLE' %}rgba(250,204,21,0.15){% elif lot.status == 'RESERVED' %}rgba(129,140,248,0.15){% else %}rgba(23,23,23,0.08){% endif %}; color: #171717;">
+                                    ${{ lot.price }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-map fs-1 text-muted opacity-50"></i>
+                        <p class="text-muted small mt-2">No hay lotes registrados.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Volver -->
+                <div class="mt-4 pt-3 border-top border-light text-center">
+                    <a href="{% url 'lot_list' %}" class="btn btn-link text-dark text-decoration-none fw-bold small">
+                        <i class="bi bi-grid-fill me-2"></i>Ver Catálogo de Lotes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mapa -->
+        <div class="col-lg-8" data-aos="fade-up" data-aos-delay="100">
+            <div class="premium-card p-0 border-0 shadow-sm overflow-hidden"
+                 style="height: 600px; position: relative; border-radius: 1.5rem;">
+
+                <!-- Mapa Leaflet -->
+                <div id="map" style="width: 100%; height: 100%; z-index: 1; border-radius: 1.5rem;"></div>
+
+                <!-- Leyenda de estados -->
+                <div class="position-absolute bottom-0 start-0 m-3 p-3 bg-white shadow-sm"
+                     style="z-index: 1000; border-radius: 1rem; border: 1px solid rgba(0,0,0,0.06);">
+                    <div class="d-flex flex-column gap-2 small fw-bold text-muted">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="rounded-circle" style="width:12px; height:12px; background:#FACC15; display:inline-block; box-shadow:0 0 5px rgba(250,204,21,0.7);"></span>
+                            Disponible
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="rounded-circle" style="width:12px; height:12px; background:#818CF8; display:inline-block; box-shadow:0 0 5px rgba(129,140,248,0.7);"></span>
+                            Reservado
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="rounded-circle" style="width:12px; height:12px; background:#171717; display:inline-block;"></span>
+                            Vendido
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badge de ciudad -->
+                <div class="position-absolute top-0 end-0 m-3"
+                     style="z-index: 1000;">
+                    <span class="badge px-3 py-2 shadow-sm fw-semibold"
+                          style="background: rgba(255,255,255,0.95); color:#171717; border-radius:50px; border: 1px solid rgba(0,0,0,0.06); font-size:0.75rem;">
+                        <i class="bi bi-geo-fill me-1" style="color:#FACC15;"></i>
+                        Barranquilla, Atlántico
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // ─── Inicializar mapa centrado en Barranquilla ───────────────────────────
+    // Coordenadas del centro de Barranquilla, Atlántico, Colombia
+    const BARRANQUILLA_CENTER = [10.9639, -74.7964];
+    const BARRANQUILLA_ZOOM = 13;
+
+    const map = L.map('map', {
+        zoomControl: false,
+        scrollWheelZoom: true,
+        doubleClickZoom: true
+    }).setView(BARRANQUILLA_CENTER, BARRANQUILLA_ZOOM);
+
+    // Tiles CartoDB Voyager (sin necesidad de API key)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CartoDB</a>'
+    }).addTo(map);
+
+    // Controles de zoom en esquina inferior derecha
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // ─── Datos de lotes desde Django (server-side) ───────────────────────────
+    const lotsData = [
+        {% for lot in lots %}
+        {
+            id: {{ lot.id }},
+            code: "{{ lot.code }}",
+            status: "{{ lot.status }}",
+            stage: "{{ lot.stage.name }}",
+            area_m2: "{{ lot.area_m2 }}",
+            price: "{{ lot.price }}",
+            latitude: {{ lot.latitude|default:"null" }},
+            longitude: {{ lot.longitude|default:"null" }},
+            {% if lot.image %}
+            imageUrl: "{{ lot.image.url }}",
+            {% else %}
+            imageUrl: null,
+            {% endif %}
+            detailUrl: "{% url 'buy_lot' lot.id %}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // ─── Colores y etiquetas por estado ─────────────────────────────────────
+    const STATUS_CONFIG = {
+        'AVAILABLE': { color: '#FACC15', glow: 'rgba(250,204,21,0.5)', label: 'Disponible' },
+        'RESERVED':  { color: '#818CF8', glow: 'rgba(129,140,248,0.5)', label: 'Reservado'  },
+        'SOLD':      { color: '#171717', glow: 'rgba(23,23,23,0.3)',    label: 'Vendido'    }
+    };
+
+    // ─── Counters estadísticos ───────────────────────────────────────────────
+    let cntAvailable = 0, cntReserved = 0, cntSold = 0;
+
+    // ─── Crear marcadores ────────────────────────────────────────────────────
+    const lotMarkers = {};
+    const validBounds = [];
+
+    lotsData.forEach(function(lot) {
+        // Verificar coordenadas válidas (dentro del rango de Colombia / área de Barranquilla)
+        const hasValidCoords = lot.latitude !== null && lot.longitude !== null
+            && lot.latitude !== 0 && lot.longitude !== 0
+            && lot.latitude > 5 && lot.latitude < 15        // Rango latitud Colombia norte
+            && lot.longitude > -80 && lot.longitude < -70;  // Rango longitud costa Caribe
+
+        const cfg = STATUS_CONFIG[lot.status] || STATUS_CONFIG['AVAILABLE'];
+
+        // Estadísticas
+        if (lot.status === 'AVAILABLE') cntAvailable++;
+        else if (lot.status === 'RESERVED') cntReserved++;
+        else cntSold++;
+
+        if (hasValidCoords) {
+            // Marcador circular con borde blanco
+            const marker = L.circleMarker([lot.latitude, lot.longitude], {
+                radius: 12,
+                fillColor: cfg.color,
+                color: '#ffffff',
+                weight: 2.5,
+                opacity: 1,
+                fillOpacity: 0.95
+            }).addTo(map);
+
+            // Popup con info del lote
+            const popupContent = `
+                <div style="font-family:'Plus Jakarta Sans',sans-serif; min-width:200px; padding:4px;">
+                    <div style="margin-bottom:8px;">
+                        <span style="background:${cfg.color}; color:${lot.status==='AVAILABLE'?'#171717':'#fff'}; padding:3px 10px; border-radius:50px; font-size:0.72rem; font-weight:700;">
+                            ${cfg.label}
+                        </span>
+                    </div>
+                    <div style="font-size:1.1rem; font-weight:800; color:#171717; margin-bottom:2px;">Lote ${lot.code}</div>
+                    <div style="font-size:0.8rem; color:#737373; margin-bottom:8px;">${lot.stage}</div>
+                    ${lot.imageUrl ? `<img src="${lot.imageUrl}" alt="Lote ${lot.code}" style="width:100%;max-height:130px;object-fit:cover;border-radius:0.75rem;margin-bottom:10px;">` : ''}
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <div>
+                            <div style="font-size:0.72rem; color:#737373;">Área</div>
+                            <div style="font-weight:700; color:#171717;">${lot.area_m2} m²</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:0.72rem; color:#737373;">Precio</div>
+                            <div style="font-weight:700; color:#171717;">$${parseFloat(lot.price).toLocaleString('es-CO')}</div>
+                        </div>
+                    </div>
+                    <a href="${lot.detailUrl}" style="display:block; background:#171717; color:#fff; text-align:center; padding:8px 0; border-radius:0.75rem; font-weight:700; font-size:0.85rem; text-decoration:none;">
+                        Ver Detalles →
+                    </a>
+                </div>
+            `;
+
+            marker.bindPopup(popupContent, {
+                maxWidth: 240,
+                className: 'custom-popup'
+            });
+
+            // Tooltip con nombre al hover
+            marker.bindTooltip(`<span style="font-weight:700; font-size:0.8rem;">Lote ${lot.code}</span>`, {
+                permanent: false,
+                direction: 'top',
+                offset: [0, -8]
+            });
+
+            lotMarkers[lot.id] = marker;
+            validBounds.push([lot.latitude, lot.longitude]);
+        }
+    });
+
+    // ─── Actualizar contadores ───────────────────────────────────────────────
+    document.getElementById('count-available').textContent = cntAvailable;
+    document.getElementById('count-reserved').textContent  = cntReserved;
+    document.getElementById('count-sold').textContent      = cntSold;
+
+    // ─── Ajustar vista: si hay marcadores válidos, fitBounds; sino Barranquilla ──
+    if (validBounds.length > 0) {
+        if (validBounds.length === 1) {
+            map.setView(validBounds[0], 16);
+        } else {
+            map.fitBounds(validBounds, { padding: [60, 60], maxZoom: 17 });
+        }
+    } else {
+        // Fallback: mostrar Barranquilla completa
+        map.setView(BARRANQUILLA_CENTER, BARRANQUILLA_ZOOM);
+    }
+
+    // ─── Clic en lista lateral → centrar marcador ────────────────────────────
+    document.querySelectorAll('.lot-item').forEach(function (item) {
+        item.addEventListener('mouseenter', function () {
+            this.style.background = 'rgba(250,204,21,0.08)';
+            this.style.borderRadius = '0.75rem';
+        });
+        item.addEventListener('mouseleave', function () {
+            this.style.background = 'transparent';
+        });
+        item.addEventListener('click', function () {
+            const lotId = parseInt(this.getAttribute('data-lot-id'));
+            const marker = lotMarkers[lotId];
+            if (marker) {
+                const latlng = marker.getLatLng();
+                map.setView(latlng, 17, { animate: true });
+                marker.openPopup();
+            }
+        });
+    });
+
+    // ─── Forzar redimensionado del mapa (previene tiles en blanco) ───────────
+    setTimeout(function () { map.invalidateSize(); }, 300);
+});
+</script>
+
+<style>
+    /* Scrollbar sidebar */
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #e5e5e5; border-radius: 10px; }
+
+    /* Popup personalizado */
+    .custom-popup .leaflet-popup-content-wrapper {
+        border-radius: 1.25rem;
+        border: 0;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+        padding: 0.75rem;
+    }
+    .custom-popup .leaflet-popup-content { margin: 0; }
+    .custom-popup .leaflet-popup-tip-container { display: none; }
+
+    /* Tooltip */
+    .leaflet-tooltip {
+        background: #171717;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .leaflet-tooltip::before { border-top-color: #171717; }
+</style>
+{% endblock %}

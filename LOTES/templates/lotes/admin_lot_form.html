@@ -1,0 +1,138 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-7" data-aos="fade-up">
+            <div class="premium-card p-4 p-lg-5 border-0 shadow-lg">
+                <div class="text-center mb-5">
+                    <div class="mb-4 d-inline-flex align-items-center justify-content-center bg-light rounded-circle"
+                        style="width: 80px; height: 80px;">
+                        <i class="bi bi-grid-1x2 text-dark fs-1"></i>
+                    </div>
+                    <h1 class="h4 fw-bold text-dark">
+                        {% if lot %}Editar lote{% else %}Nuevo lote{% endif %}
+                    </h1>
+                    <p class="text-muted small fw-medium">Gestiona la información del lote dentro del proyecto.</p>
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Código</label>
+                            <input type="text" name="code" value="{{ form.code }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Etapa</label>
+                            <select name="stage" required>
+                                <option value="">Seleccione una etapa</option>
+                                {% for stage in stages %}
+                                <option value="{{ stage.id }}" {% if form.stage == stage.id %}selected{% endif %}>
+                                    {{ stage.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Área (m²)</label>
+                            <input type="number" step="0.01" min="0" name="area_m2" value="{{ form.area_m2 }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Precio</label>
+                            <input type="number" step="0.01" min="0" name="price" value="{{ form.price }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Estado</label>
+                            <select name="status">
+                                <option value="AVAILABLE" {% if form.status == 'AVAILABLE' %}selected{% endif %}>Disponible
+                                </option>
+                                <option value="RESERVED" {% if form.status == 'RESERVED' %}selected{% endif %}>Reservado
+                                </option>
+                                <option value="SOLD" {% if form.status == 'SOLD' %}selected{% endif %}>Vendido</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Latitud</label>
+                            <input type="number" step="0.000001" name="latitude" value="{{ form.latitude }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label
+                                class="form-label small fw-bold text-dark text-uppercase tracking-wider">Longitud</label>
+                            <input type="number" step="0.000001" name="longitude" value="{{ form.longitude }}" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Imagen principal</label>
+                            <div class="p-3 rounded-4 border border-dark border-opacity-10 bg-white d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="p-2 rounded-3 bg-light">
+                                        <i class="bi bi-image text-dark fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <div class="small text-muted">Formatos: JPG, PNG · Máx. 5MB</div>
+                                        <label class="btn btn-outline-dark btn-sm mt-2">
+                                            Seleccionar archivo
+                                            <input type="file" name="image" accept="image/*" hidden>
+                                        </label>
+                                    </div>
+                                </div>
+                                {% if lot and lot.image %}
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="{{ lot.image.url }}" alt="Imagen lote {{ lot.code }}" class="rounded-3" style="height: 72px; width: 72px; object-fit: cover;">
+                                    <div class="form-check mb-0">
+                                        <input class="form-check-input" type="checkbox" name="delete_main_image" value="1" id="deleteMainImage">
+                                        <label class="form-check-label small text-muted" for="deleteMainImage">
+                                            Quitar imagen
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-dark text-uppercase tracking-wider">Galería (opcional)</label>
+                            <div class="p-3 rounded-4 border border-dark border-opacity-10 bg-white">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="small text-muted">Puedes seleccionar múltiples imágenes</div>
+                                    <label class="btn btn-outline-dark btn-sm">
+                                        Añadir imágenes
+                                        <input type="file" name="images" accept="image/*" multiple hidden>
+                                    </label>
+                                </div>
+                                {% if lot and lot.images.all %}
+                                <div class="row g-3 mt-3">
+                                    {% for img in lot.images.all %}
+                                    <div class="col-6 col-md-4 col-lg-3">
+                                        <div class="border rounded-3 overflow-hidden position-relative" style="height: 90px;">
+                                            <img src="{{ img.image.url }}" class="w-100 h-100" style="object-fit: cover;" alt="Imagen {{ forloop.counter }}">
+                                            <div class="position-absolute top-0 end-0 m-1">
+                                                <div class="form-check form-check-sm">
+                                                    <input class="form-check-input" type="checkbox" name="delete_images" value="{{ img.id }}" id="deleteImage{{ img.id }}">
+                                                    <label class="form-check-label badge bg-danger bg-opacity-75 text-white border-0 small" for="deleteImage{{ img.id }}">
+                                                        Quitar
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid mt-5 gap-3">
+                        <button type="submit" class="btn btn-accent py-3 fw-bold">
+                            {% if lot %}Guardar cambios{% else %}Crear lote{% endif %}
+                        </button>
+                        <a href="{% url 'admin_lot_list' %}"
+                            class="btn btn-link text-muted extra-small mt-1 text-decoration-none fw-bold text-center">
+                            <i class="bi bi-arrow-left"></i> Volver al listado de lotes
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

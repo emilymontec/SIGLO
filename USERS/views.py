@@ -14,62 +14,50 @@ from django.conf import settings
 
 def register_view(request):
     form = EmailUserCreationForm(request.POST or None)
-    if form.is_valid():
-        user = form.save(commit=False)
-        user.is_active = False
-        user.role = "CLIENT"
-        user.save()
 
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = default_token_generator.make_token(user)
-        activation_link = request.build_absolute_uri(
-            f"/cuenta/activar/{uid}/{token}/"
-        )
+    if request.method == "POST":
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.role = "CLIENT"
+            user.save()
 
-        subject = "Activa tu cuenta en SIGLO"
-        body_lines = [
-            "Hola,",
-            "",
-            "Gracias por registrarte en SIGLO.",
-            "Para activar tu cuenta y comenzar a invertir, haz clic en el siguiente enlace:",
-            "",
-            activation_link,
-            "",
-            "Si tú no solicitaste este registro, puedes ignorar este correo.",
-        ]
-        body = "\n".join(body_lines)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
 
-        email = EmailMessage(
-            subject,
-            body,
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-            to=[user.email],
-        )
-        print("Intentando enviar correo a:", user.email)
-        try:
+            activation_link = request.build_absolute_uri(
+                f"/cuenta/activar/{uid}/{token}/"
+            )
+
+            subject = "Activa tu cuenta en SIGLO"
+            body = f"""
+Hola,
+
+Gracias por registrarte en SIGLO.
+
+Para activar tu cuenta haz clic en el siguiente enlace:
+
+{activation_link}
+
+Si no solicitaste esta cuenta, ignora este correo.
+"""
+
+            email = EmailMessage(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+            )
+
             email.send(fail_silently=False)
-        except Exception:
-            if settings.DEBUG:
-                raise
 
-        return render(
-            request,
-            "users/registration_pending.html",
-            {
-                "email": user.email,
-                "activation_link": activation_link,
-                "debug": settings.DEBUG,
-            },
-        if request.method == "POST":
-            form = RegisterForm(request.POST)
-            if form.is_valid():
-                print("FORM VALID ✅")
-        else:
-            print("FORM ERRORS ❌", form.errors)
-        print("Correo enviado correctamente")
-        )
+            return render(
+                request,
+                "users/registration_pending.html",
+                {"email": user.email},
+            )
+
     return render(request, "users/register.html", {"form": form})
-
 
 @login_required
 def admin_user_list(request):

@@ -93,12 +93,17 @@ def profile_view(request):
 
     if request.method == "POST":
         email = request.POST.get("email") or ""
+        first_name = request.POST.get("first_name") or ""
+        last_name = request.POST.get("last_name") or ""
         current_password = request.POST.get("current_password") or ""
         new_password = request.POST.get("new_password") or ""
         confirm_password = request.POST.get("confirm_password") or ""
 
         if email and email != user.email:
             user.email = email
+        
+        user.first_name = first_name
+        user.last_name = last_name
 
         if new_password or confirm_password:
             if not current_password or not user.check_password(current_password):
@@ -109,6 +114,8 @@ def profile_view(request):
                     {
                         "form": {
                             "email": email or user.email,
+                            "first_name": first_name or user.first_name,
+                            "last_name": last_name or user.last_name,
                         }
                     },
                 )
@@ -120,6 +127,8 @@ def profile_view(request):
                     {
                         "form": {
                             "email": email or user.email,
+                            "first_name": first_name or user.first_name,
+                            "last_name": last_name or user.last_name,
                         }
                     },
                 )
@@ -134,6 +143,8 @@ def profile_view(request):
     context = {
         "form": {
             "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
         }
     }
     return render(request, "users/profile.html", context)

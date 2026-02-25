@@ -46,6 +46,7 @@ from SALES.views import (
     my_purchases_list,
     purchase_detail,
     register_payment,
+    validate_payment,
 )
 
 
@@ -81,6 +82,7 @@ urlpatterns = [
     path('panel/compras/', admin_purchase_list, name='admin_purchase_list'),
     path('panel/compras/nueva/', admin_purchase_create, name='admin_purchase_create'),
     path('panel/compras/<int:purchase_id>/editar/', admin_purchase_edit, name='admin_purchase_edit'),
+    path('panel/pagos/<int:payment_id>/validar/', validate_payment, name='admin_payment_validate'),
     path('panel/pagos/', admin_payment_list, name='admin_payment_list'),
     path('panel/pagos/nuevo/', admin_payment_create, name='admin_payment_create'),
     path('panel/pagos/<int:payment_id>/editar/', admin_payment_edit, name='admin_payment_edit'),
@@ -91,6 +93,6 @@ urlpatterns = [
     path('perfil/', profile_view, name='profile'),
     path('logout/', logout_view, name='logout'),
     path('accounts/logout/', logout_view),
-    path('accounts/profile/', profile_redirect, name='profile'),
+    path('accounts/profile/', profile_redirect),
     path('accounts/', include('django.contrib.auth.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,6 +1,9 @@
 {% extends "index.html" %}
 
 {% block content %}
+<!-- Cargar QRCode.js al inicio para asegurar disponibilidad -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
         <div>
@@ -18,26 +21,93 @@
             <table class="table table-hover align-middle mb-0" style="color: var(--text-main);">
                 <thead>
                     <tr class="border-white border-opacity-10">
-                        <th class="py-3 ps-4 text-muted extra-small text-uppercase fw-bold">ID pago</th>
+                        <th class="py-3 ps-4 text-muted extra-small text-uppercase fw-bold">ID Pago</th>
                         <th class="py-3 text-muted extra-small text-uppercase fw-bold">Compra</th>
                         <th class="py-3 text-muted extra-small text-uppercase fw-bold">Cliente</th>
                         <th class="py-3 text-muted extra-small text-uppercase fw-bold">Monto</th>
                         <th class="py-3 text-muted extra-small text-uppercase fw-bold">Fecha</th>
-                        <th class="py-3 pe-4 text-end text-muted extra-small text-uppercase fw-bold">Estado</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold">Estado</th>
+                        <th class="py-3 pe-4 text-end text-muted extra-small text-uppercase fw-bold">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for payment in payments %}
                     <tr class="border-white border-opacity-5">
-                        <td class="py-3 ps-4 fw-bold text-primary">#{{ payment.id }}</td>
+                        <td class="py-3 ps-4 fw-bold text-primary">
+                            <button class="btn btn-link btn-sm text-decoration-none p-0 me-2" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#payment-detail-{{ payment.id }}">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            #{{ payment.id }}
+                        </td>
                         <td class="py-3 small">Compra #{{ payment.purchase.id }}</td>
                         <td class="py-3 small">
                             {{ payment.purchase.client.get_full_name|default:payment.purchase.client.email }}
                         </td>
-                        <td class="py-3 small">${{ payment.amount }}</td>
-                        <td class="py-3 small text-muted">{{ payment.payment_date }}</td>
+                        <td class="py-3 small fw-bold text-success">${{ payment.amount }}</td>
+                        <td class="py-3 small text-muted">{{ payment.payment_date|date:"d/m/Y" }}</td>
+                        <td class="py-3">
+                            {% if payment.is_validated %}
+                            <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill extra-small fw-bold">
+                                <i class="bi bi-check-circle-fill me-1"></i> Validado
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning-subtle text-warning px-3 py-1 rounded-pill extra-small fw-bold">
+                                Pendiente
+                            </span>
+                            {% endif %}
+                        </td>
                         <td class="py-3 pe-4 text-end">
-                            <span class="badge bg-light text-muted extra-small">Registro histórico (no editable)</span>
+                            {% if not payment.is_validated %}
+                            <form action="{% url 'admin_payment_validate' payment.id %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-xs px-3 py-1 rounded-pill extra-small fw-bold">
+                                    Validar
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <!-- Detalle Expandible del Pago (Comprobante QR) -->
+                    <tr class="collapse" id="payment-detail-{{ payment.id }}">
+                        <td colspan="7" class="bg-light bg-opacity-50 p-4">
+                            <div class="row align-items-center" id="printable-area-{{ payment.id }}">
+                                <div class="col-md-8">
+                                    <h6 class="fw-bold mb-3 d-print-block">Comprobante de Pago SIGLO</h6>
+                                    <div class="row g-3">
+                                        <div class="col-6">
+                                            <p class="mb-1 text-muted extra-small text-uppercase fw-bold">ID Transacción</p>
+                                            <p class="small mb-0">PAY-{{ payment.id }}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="mb-1 text-muted extra-small text-uppercase fw-bold">Fecha de Pago</p>
+                                            <p class="small mb-0">{{ payment.payment_date|date:"l, d F Y" }}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="mb-1 text-muted extra-small text-uppercase fw-bold">Monto Validado</p>
+                                            <p class="small mb-0 fw-bold">${{ payment.amount }}</p>
+                                        </div>
+                                        <div class="col-6">
+                                            <p class="mb-1 text-muted extra-small text-uppercase fw-bold">Referencia de Compra</p>
+                                            <p class="small mb-0">#{{ payment.purchase.id }}</p>
+                                        </div>
+                                        <div class="col-12">
+                                            <p class="mb-1 text-muted extra-small text-uppercase fw-bold">Cliente</p>
+                                            <p class="small mb-0">{{ payment.purchase.client.get_full_name|default:payment.purchase.client.email }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 d-print-none">
+                                        <button onclick="printReceipt('{{ payment.id }}')" class="btn btn-outline-dark btn-xs px-3 rounded-pill">
+                                            <i class="bi bi-printer me-1"></i> Imprimir QR
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-center border-start">
+                                    <p class="mb-2 text-muted extra-small text-uppercase fw-bold">Comprobante QR</p>
+                                    <div id="qrcode-payment-{{ payment.id }}" class="d-inline-block p-3 bg-white border rounded shadow-sm mb-2" style="min-width: 128px; min-height: 128px;"></div>
+                                    <p class="extra-small text-muted mb-0">Escanear para verificar</p>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -55,4 +125,98 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejador centralizado para la generación de QR en filas expandibles
+    const collapses = document.querySelectorAll('.collapse');
+    collapses.forEach(collapseEl => {
+        collapseAt = new bootstrap.Collapse(collapseEl, { toggle: false });
+        collapseEl.addEventListener('shown.bs.collapse', function () {
+            const paymentId = this.id.split('-')[2];
+            const qrContainer = document.getElementById("qrcode-payment-" + paymentId);
+            
+            if (qrContainer && qrContainer.innerHTML === "") {
+                // Obtener datos de los elementos hermanos o del contexto
+                const row = this.previousElementSibling;
+                const amount = row.querySelector('.text-success.fw-bold').innerText.replace('$', '');
+                
+                new QRCode(qrContainer, {
+                    text: "PAYMENT-VERIFICATION:" + paymentId + "|AMT:" + amount,
+                    width: 128,
+                    height: 128,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            }
+        });
+    });
+});
+
+function printReceipt(id) {
+    const printContents = document.getElementById('printable-area-' + id).innerHTML;
+    const originalContents = document.body.innerHTML;
+
+    // Crear un contenedor temporal para la impresión
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Comprobante de Pago - SIGLO</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body { font-family: 'Inter', sans-serif; padding: 40px; text-align: center; }
+                    .extra-small { font-size: 0.75rem; color: #6c757d; }
+                    .fw-bold { font-weight: 700; }
+                    .text-muted { color: #6c757d !important; }
+                    .border-start { border-left: 1px solid #dee2e6 !important; }
+                    #qrcode-payment-${id} img { margin: 0 auto; }
+                    @media print {
+                        .d-print-none { display: none !important; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container border p-4 rounded shadow-sm" style="max-width: 600px; margin: 0 auto;">
+                    <h2 class="mb-4 fw-bold">SIGLO</h2>
+                    ${printContents}
+                </div>
+                <script>
+                    window.onload = function() {
+                        setTimeout(() => {
+                            window.print();
+                            window.onafterprint = function() { window.close(); };
+                        }, 500);
+                    }
+                <\/script>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+</script>
+
+<style>
+    .extra-small {
+        font-size: 0.75rem;
+    }
+    .btn-xs {
+        font-size: 0.7rem;
+    }
+    .bg-success-subtle {
+        background-color: #d1e7dd;
+        color: #0f5132 !important;
+    }
+    .bg-warning-subtle {
+        background-color: #fff3cd;
+        color: #664d03 !important;
+    }
+    tr.collapse.show {
+        display: table-row !important;
+    }
+    @media print {
+        .d-print-none { display: none !important; }
+    }
+</style>
 {% endblock %}

@@ -19,18 +19,6 @@
         </div>
     </div>
 
-    {% if project %}
-    <div class="row g-3 mb-4">
-        <div class="col-12" data-aos="fade-up" data-aos-delay="50">
-            <div class="premium-card h-100 border-0 shadow-sm">
-                <p class="text-muted extra-small text-uppercase mb-1 fw-bold">Descripción del proyecto</p>
-                <h2 class="h5 fw-bold text-dark mb-2">{{ project.title }}</h2>
-                <p class="small text-muted mb-0">{{ project.description }}</p>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
     <div class="row g-3 mb-4">
         <div class="col-md-3" data-aos="fade-up" data-aos-delay="0">
             <div class="premium-card h-100 border-0 shadow-sm">
@@ -105,17 +93,14 @@
             <div class="premium-card h-100 border-0 shadow-sm">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div>
-                        <h2 class="h6 fw-bold text-uppercase text-muted mb-1">Soporte y contenido</h2>
-                        <p class="mb-0 extra-small text-muted">PQRS y comunicación del proyecto.</p>
+                        <h2 class="h6 fw-bold text-uppercase text-muted mb-1">Soporte</h2>
+                        <p class="mb-0 extra-small text-muted">Gestión de PQRS y comunicación.</p>
                     </div>
                     <i class="bi bi-inbox fs-3 text-dark"></i>
                 </div>
                 <div class="d-grid gap-2">
                     <a href="{% url 'admin_pqrs_list' %}" class="btn btn-outline-dark w-100">
                         Ver todas las PQRS
-                    </a>
-                    <a href="{% url 'admin_content' %}" class="btn btn-outline-dark w-100">
-                        Contenido del proyecto
                     </a>
                 </div>
             </div>

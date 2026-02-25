@@ -10,8 +10,6 @@ from .models import ProjectInfo
 
 
 def dashboard(request):
-    project = ProjectInfo.objects.first()
-
     if request.user.is_authenticated:
         role = getattr(request.user, "role", "CLIENT")
 
@@ -38,7 +36,6 @@ def dashboard(request):
             pqrs_open = PQRS.objects.filter(status="OPEN").count()
 
             context = {
-                "project": project,
                 "users_total": users_total,
                 "clients_total": clients_total,
                 "admins_total": admins_total,
@@ -69,7 +66,6 @@ def dashboard(request):
         pqrs_open = PQRS.objects.filter(client=request.user, status="OPEN").count()
 
         context = {
-            "project": project,
             "purchases_total": purchases.count(),
             "lots_owned_count": lots_owned_count,
             "total_purchase_amount": total_purchase_amount,
@@ -83,33 +79,9 @@ def dashboard(request):
     stages_qs = Stage.objects.filter(name__in=desired_names)
     stage_map = {s.name: s for s in stages_qs}
     stages = [stage_map[name] for name in desired_names if name in stage_map]
-    return render(request, "project_info/dashboard.html", {"project": project, "stages": stages})
+    return render(request, "project_info/dashboard.html", {"stages": stages})
 
 
 @staff_member_required
 def admin_content(request):
-    project = ProjectInfo.objects.first()
-
-    if request.method == "POST":
-        title = request.POST.get("title") or ""
-        description = request.POST.get("description") or ""
-
-        if project is None:
-            project = ProjectInfo.objects.create(title=title, description=description)
-        else:
-            project.title = title
-            project.description = description
-            project.save()
-
-        return redirect("admin_content")
-
-    if project is None:
-        form = {"title": "", "description": ""}
-    else:
-        form = {"title": project.title, "description": project.description}
-
-    context = {
-        "project": project,
-        "form": form,
-    }
-    return render(request, "project_info/admin_content_form.html", context)
+    return redirect('dashboard')

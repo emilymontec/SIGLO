@@ -10,15 +10,11 @@
                     Innovación Inmobiliaria
                 </div>
                 <h1 class="hero-title">
-                    {{ project.title|default:"Transformando el " }} <span>Futuro</span> del Urbanismo
+                    Transformando el <span>Futuro</span> del Urbanismo
                 </h1>
                 <p class="lead text-muted mb-5 pe-lg-5 fw-medium">
-                    {% if project and project.description %}
-                        {{ project.description }}
-                    {% else %}
-                        Descubre una nueva forma de gestionar y adquirir lotes con tecnología de vanguardia. SIGLO conecta
-                        la visión arquitectónica con la eficiencia digital.
-                    {% endif %}
+                    Descubre una nueva forma de gestionar y adquirir lotes con tecnología de vanguardia. SIGLO conecta
+                    la visión arquitectónica con la eficiencia digital.
                 </p>
                 <div class="d-flex flex-wrap gap-3">
                     <a href="{% url 'lot_list' %}" class="btn btn-accent px-5">

@@ -16,7 +16,9 @@ def update_lots_status_for_purchase(purchase):
     lots = purchase.lots.all()
     if not lots:
         return
-    payments = purchase.payment_set.all()
+    
+    # Only consider validated payments for status update
+    payments = purchase.payment_set.filter(is_validated=True)
     total_paid = sum((p.amount for p in payments), Decimal("0"))
     sum_lot_prices = sum((l.price or Decimal("0") for l in lots), Decimal("0"))
     contractual_total = purchase.total_amount or sum_lot_prices
@@ -33,27 +35,33 @@ def update_lots_status_for_purchase(purchase):
 
     total_targets = sum(targets.values(), Decimal("0"))
 
+    # CASO 1: Pago total cubierto -> VENDIDO
     if total_paid >= total_targets and total_targets > Decimal("0"):
         for lot in lots:
             lot.status = "SOLD"
             lot.save()
         return
 
+    # CASO 2: Sin pagos validados -> DISPONIBLE
     if total_paid <= Decimal("0"):
         for lot in lots:
             lot.status = "AVAILABLE"
             lot.save()
         return
 
+    # CASO 3: Pago parcial (cuotas) -> RESERVADO o VENDIDO proporcionalmente
     remaining = total_paid
     # Ordenar por objetivo (desc), luego por id para estabilidad
     ordered_lots = sorted(lots, key=lambda l: (targets.get(l.id, Decimal("0")), l.id), reverse=True)
     for lot in ordered_lots:
         target = targets.get(lot.id, Decimal("0"))
+        # Si el pago restante cubre el precio total de este lote específico
         if remaining >= target and target > Decimal("0"):
             lot.status = "SOLD"
             remaining -= target
         else:
+            # Si hay algún pago pero no cubre el total, o ya no queda saldo del pago total
+            # El lote queda RESERVADO porque ya hay cuotas pagadas en la compra
             lot.status = "RESERVED"
         lot.save()
 
@@ -187,6 +195,18 @@ class PaymentCreateView(CreateView):
     model = Payment
     fields = ['purchase', 'amount']
     success_url = '/'
+
+
+@staff_member_required
+def validate_payment(request, payment_id):
+    payment = get_object_or_404(Payment, id=payment_id)
+    payment.is_validated = True
+    payment.save()
+    
+    # Update lots status for the associated purchase
+    update_lots_status_for_purchase(payment.purchase)
+    
+    return redirect("admin_purchase_list")
 
 
 @staff_member_required

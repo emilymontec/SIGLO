@@ -18,6 +18,7 @@ class Lot(models.Model):
     image = models.FileField(upload_to="lot_images/", blank=True, null=True)
     stage = models.ForeignKey(Stage, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='AVAILABLE')
+    description = models.TextField(blank=True, null=True)
 
     # Para mapa interactivo
     latitude = models.FloatField()

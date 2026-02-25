@@ -1,121 +1,257 @@
 {% extends "index.html" %}
 
 {% block content %}
-<div class="row mt-2" data-aos="fade-up">
-    <div class="col-lg-5 mb-4">
-        <div class="premium-card h-100">
-            <div class="d-flex align-items-center gap-3 mb-4">
-                <div class="p-3 rounded-4"
-                    style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.2);">
-                    <i class="bi bi-receipt text-primary h4 mb-0"></i>
-                </div>
-                <div>
-                    <h1 class="h4 fw-bold text-white mb-0">Detalle de Compra</h1>
-                    <span class="text-muted small">ID de Transacción: #{{ purchase.id }}</span>
-                </div>
-            </div>
+<!-- Cargar QRCode.js al inicio para asegurar disponibilidad -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-            <div class="mb-4">
-                <label class="d-block mb-1">Inversionista</label>
-                <div class="p-3 rounded-4 bg-white bg-opacity-5 border border-white border-opacity-10">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-person-circle text-primary"></i>
-                        <span class="fw-bold text-white">{{
-                            purchase.client.get_full_name|default:purchase.client.username }}</span>
+<div class="container py-4">
+    <div class="row g-4" data-aos="fade-up">
+        <div class="col-lg-5">
+            <div class="premium-card h-100 shadow-lg border-0">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="p-3 rounded-4 bg-primary bg-opacity-10 border border-primary border-opacity-20">
+                        <i class="bi bi-receipt text-primary h4 mb-0"></i>
+                    </div>
+                    <div>
+                        <h1 class="h4 fw-bold text-dark mb-0">Detalle de Compra</h1>
+                        <span class="text-muted small">ID de Transacción: #{{ purchase.id }}</span>
                     </div>
                 </div>
-            </div>
 
-            <div class="mb-4">
-                <label class="d-block mb-1">Activos</label>
-                <div class="list-group list-group-flush bg-transparent">
-                    {% for lot in purchase.lots.all %}
-                    <div class="list-group-item bg-transparent border-white border-opacity-5 px-0 py-3">
-                        <div class="d-flex align-items-center gap-3">
-                            {% if lot.image %}
-                            <div style="width: 72px; height: 72px;" class="flex-shrink-0 rounded-4 overflow-hidden bg-white bg-opacity-5 border border-white border-opacity-10">
-                                <img src="{{ lot.image.url }}" alt="Imagen {{ lot.code }}" class="w-100 h-100" style="object-fit: cover;">
-                            </div>
-                            {% endif %}
-                            <div class="flex-grow-1 d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0 text-white fw-bold">{{ lot.code }}</h6>
-                                    <small class="text-muted">{{ lot.area_m2 }} m² · {{ lot.stage.name }}</small>
-                                </div>
-                                <span class="fw-bold text-primary">${{ lot.price }}</span>
-                            </div>
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted text-uppercase mb-2 d-block">Inversionista</label>
+                    <div class="p-3 rounded-4 bg-light border border-dark border-opacity-5">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-person-circle text-primary"></i>
+                            <span class="fw-bold text-dark">{{ purchase.client.get_full_name|default:purchase.client.username }}</span>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-            </div>
 
-            <div class="mt-4 pt-4 border-top border-white border-opacity-5">
-                <div class="row g-3">
-                    <div class="col-6">
-                        <label class="d-block mb-1">Valor Total</label>
-                        <h4 class="fw-bold text-white mb-0">${{ purchase.total_amount }}</h4>
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted text-uppercase mb-2 d-block">Lotes en esta Compra</label>
+                    <div class="list-group list-group-flush bg-transparent">
+                        {% for lot in purchase.lots.all %}
+                        <div class="list-group-item bg-transparent border-dark border-opacity-5 px-0 py-3">
+                            <div class="d-flex align-items-center gap-3">
+                                {% if lot.image %}
+                                <div style="width: 60px; height: 60px;" class="flex-shrink-0 rounded-3 overflow-hidden border">
+                                    <img src="{{ lot.image.url }}" alt="Imagen {{ lot.code }}" class="w-100 h-100" style="object-fit: cover;">
+                                </div>
+                                {% endif %}
+                                <div class="flex-grow-1 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0 text-dark fw-bold">{{ lot.code }}</h6>
+                                        <small class="text-muted">{{ lot.area_m2 }} m² · {{ lot.stage.name }}</small>
+                                    </div>
+                                    <span class="fw-bold text-primary">${{ lot.price }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
                     </div>
-                    <div class="col-6 text-end">
-                        <label class="d-block mb-1">Saldo Pendiente</label>
-                        <h4 class="fw-bold text-accent mb-0">${{ purchase.balance }}</h4>
+                </div>
+
+                <div class="mt-auto pt-4 border-top border-dark border-opacity-5">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="small fw-bold text-muted text-uppercase mb-1 d-block">Valor Total</label>
+                            <h4 class="fw-bold text-dark mb-0">${{ purchase.total_amount }}</h4>
+                        </div>
+                        <div class="col-6 text-end">
+                            <label class="small fw-bold text-muted text-uppercase mb-1 d-block">Saldo Pendiente</label>
+                            <h4 class="fw-bold text-accent mb-0">${{ purchase.balance }}</h4>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="col-lg-7">
-        <div class="premium-card h-100">
-            <div class="d-flex justify-content-between align-items-center mb-5">
-                <div>
-                    <h2 class="h4 fw-bold text-white mb-1">Historial de Pagos</h2>
-                    <p class="text-muted small mb-0">Registros de transacciones vinculadas.</p>
+        <div class="col-lg-7">
+            <div class="premium-card h-100 shadow-lg border-0">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="h4 fw-bold text-dark mb-1">Mis Pagos Realizados</h2>
+                        <p class="text-muted small mb-0">Historial de abonos a esta compra.</p>
+                    </div>
+                    {% if purchase.balance > 0 %}
+                    <a href="{% url 'register_payment' purchase.id %}" class="btn btn-accent btn-sm px-4 rounded-pill">
+                        <i class="bi bi-plus-lg me-1"></i> Registrar Nuevo Pago
+                    </a>
+                    {% endif %}
                 </div>
-                <a href="{% url 'register_payment' purchase.id %}" class="btn btn-info px-4">
-                    <i class="bi bi-plus-lg"></i> Registrar Pago
-                </a>
-            </div>
 
-            {% if payments %}
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" style="color: var(--text-main);">
-                    <thead>
-                        <tr class="border-white border-opacity-10">
-                            <th class="py-3 text-muted small text-uppercase fw-bold">Fecha</th>
-                            <th class="py-3 text-end text-muted small text-uppercase fw-bold">Monto</th>
-                        </tr>
-                    </thead>
-                    <tbody class="border-top-0">
-                        {% for payment in payments %}
-                        <tr class="border-white border-opacity-5">
-                            <td class="py-3">
-                                <span class="text-white-50">{{ payment.payment_date }}</span>
-                            </td>
-                            <td class="py-3 text-end">
-                                <span class="fw-bold text-primary">${{ payment.amount }}</span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="py-5 text-center">
-                <div class="mb-4 d-inline-block p-4 rounded-circle"
-                    style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);">
-                    <i class="bi bi-credit-card-2-front display-4 text-muted opacity-25"></i>
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="py-3 ps-3 text-muted extra-small text-uppercase fw-bold border-0">Fecha</th>
+                                <th class="py-3 text-muted extra-small text-uppercase fw-bold border-0">Monto</th>
+                                <th class="py-3 text-center text-muted extra-small text-uppercase fw-bold border-0">Estado</th>
+                                <th class="py-3 pe-3 text-end text-muted extra-small text-uppercase fw-bold border-0">Comprobante</th>
+                            </tr>
+                        </thead>
+                        <tbody class="border-top-0">
+                            {% for payment in payments %}
+                            <tr class="border-bottom border-dark border-opacity-5">
+                                <td class="py-3 ps-3">
+                                    <span class="text-dark small fw-medium">{{ payment.payment_date|date:"d/m/Y" }}</span>
+                                </td>
+                                <td class="py-3">
+                                    <span class="fw-bold text-primary small">${{ payment.amount }}</span>
+                                </td>
+                                <td class="py-3 text-center">
+                                    {% if payment.is_validated %}
+                                    <span class="badge bg-success-subtle text-success rounded-pill extra-small px-3 py-2">Validado</span>
+                                    {% else %}
+                                    <span class="badge bg-warning-subtle text-warning rounded-pill extra-small px-3 py-2">Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td class="py-3 pe-3 text-end">
+                                    <button class="btn btn-outline-dark btn-xs rounded-pill px-3" 
+                                            data-bs-toggle="modal" data-bs-target="#qrModal-{{ payment.id }}">
+                                        <i class="bi bi-qr-code me-1"></i> Ver QR
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                <p class="text-muted">Aún no se han registrado abonos para esta compra.</p>
-            </div>
-            {% endif %}
-
-            <div class="mt-5 pt-4 border-top border-white border-opacity-5">
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-dark w-100">
-                    <i class="bi bi-arrow-left"></i> Volver al Panel de Control
-                </a>
+                {% else %}
+                <div class="p-5 text-center">
+                    <div class="mb-4 d-inline-block p-4 rounded-circle bg-light">
+                        <i class="bi bi-cash-stack display-4 text-muted opacity-50"></i>
+                    </div>
+                    <p class="mb-0 text-muted fw-medium">Aún no has registrado pagos para esta compra.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modales fuera del flujo de la tabla para evitar conflictos -->
+{% for payment in payments %}
+<div class="modal fade" id="qrModal-{{ payment.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-dark">Comprobante de Pago</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div id="qrcode-{{ payment.id }}" class="d-inline-block p-4 bg-white border rounded-4 shadow-sm mb-4" style="min-width: 180px; min-height: 180px;"></div>
+                <div class="text-start p-4 bg-light rounded-4 mx-3">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <span class="text-muted extra-small text-uppercase fw-bold d-block">ID Pago</span>
+                            <span class="text-dark fw-bold">#{{ payment.id }}</span>
+                        </div>
+                        <div class="col-6 text-end">
+                            <span class="text-muted extra-small text-uppercase fw-bold d-block">Monto</span>
+                            <span class="text-primary fw-bold">${{ payment.amount }}</span>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted extra-small text-uppercase fw-bold d-block">Fecha</span>
+                            <span class="text-dark fw-bold">{{ payment.payment_date|date:"l, d F Y" }}</span>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted extra-small text-uppercase fw-bold d-block">Compra</span>
+                            <span class="text-dark fw-bold">#{{ purchase.id }} - {{ purchase.lots.first.code }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button onclick="printFromModal('{{ payment.id }}')" class="btn btn-premium px-5 rounded-pill">
+                        <i class="bi bi-printer me-2"></i> Imprimir Comprobante
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<script>
+// Manejador centralizado para la generación de QR
+document.addEventListener('DOMContentLoaded', function() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        modal.addEventListener('shown.bs.modal', function (event) {
+            const paymentId = this.id.split('-')[1];
+            const qrContainer = document.getElementById("qrcode-" + paymentId);
+            
+            // Solo generar si no existe ya el QR
+            if (qrContainer && qrContainer.innerHTML === "") {
+                const amount = this.querySelector('.text-primary.fw-bold').innerText.replace('$', '');
+                const clientId = "{{ purchase.client.id }}";
+                
+                new QRCode(qrContainer, {
+                    text: "PAYMENT-VERIFICATION:" + paymentId + "|AMT:" + amount + "|CLIENT:" + clientId,
+                    width: 180,
+                    height: 180,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+            }
+        });
+    });
+});
+
+function printFromModal(id) {
+    const modalElement = document.getElementById(`qrModal-${id}`);
+    const modalBody = modalElement.querySelector('.modal-body').innerHTML;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+            <head>
+                <title>Comprobante de Pago - SIGLO</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700&display=swap');
+                    body { font-family: 'Plus Jakarta Sans', sans-serif; padding: 40px; text-align: center; background: white; }
+                    .extra-small { font-size: 0.75rem; color: #6c757d; text-transform: uppercase; font-weight: 700; }
+                    .fw-bold { font-weight: 700; }
+                    .rounded-4 { border-radius: 1.5rem !important; }
+                    .bg-light { background-color: #f8f9fa !important; padding: 20px; border-radius: 1rem; }
+                    .btn-premium, .btn-close { display: none !important; }
+                    #qrcode-${id} { display: inline-block; padding: 20px; border: 1px solid #eee; border-radius: 1rem; margin-bottom: 20px; }
+                    #qrcode-${id} img { margin: 0 auto; }
+                    .text-primary { color: #000 !important; font-weight: 800; }
+                    .text-dark { color: #000 !important; }
+                    .row { text-align: left; }
+                </style>
+            </head>
+            <body>
+                <div style="max-width: 500px; margin: 0 auto; border: 1px solid #eee; padding: 30px; border-radius: 2rem;">
+                    <h2 class="fw-bold mb-4">SIGLO</h2>
+                    <p class="text-muted mb-4">Comprobante de Pago Electrónico</p>
+                    ${modalBody}
+                </div>
+                <script>
+                    window.onload = function() {
+                        setTimeout(() => {
+                            window.print();
+                            window.onafterprint = function() { window.close(); };
+                        }, 500);
+                    }
+                <\/script>
+            </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+</script>
+
+<style>
+    .extra-small { font-size: 0.7rem; }
+    .btn-xs { font-size: 0.75rem; padding: 0.3rem 0.8rem; }
+    .bg-success-subtle { background-color: #d1e7dd; color: #0f5132 !important; }
+    .bg-warning-subtle { background-color: #fff3cd; color: #664d03 !important; }
+    .modal-backdrop.show { opacity: 0.7; backdrop-filter: blur(4px); }
+</style>
 {% endblock %}

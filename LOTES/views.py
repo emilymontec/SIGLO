@@ -37,7 +37,23 @@ def lot_list_api(request):
 
 @staff_member_required
 def admin_lot_list(request):
+    from SALES.models import Purchase, Payment
     lots = Lot.objects.select_related("stage").all().order_by("code")
+    
+    # Attach recent payment info for each lot
+    for lot in lots:
+        if lot.status in ['RESERVED', 'SOLD']:
+            # Find the most recent purchase that includes this lot
+            purchase = Purchase.objects.filter(lots=lot).order_by('-created_at').first()
+            if purchase:
+                # Get the most recent payment for this purchase
+                recent_payment = Payment.objects.filter(purchase=purchase).order_by('-payment_date', '-id').first()
+                lot.recent_payment = recent_payment
+                lot.associated_purchase = purchase
+        else:
+            lot.recent_payment = None
+            lot.associated_purchase = None
+
     return render(request, "lotes/admin_lot_list.html", {"lots": lots})
 
 
@@ -61,6 +77,7 @@ def admin_lot_create(request):
             status=data.get("status") or "AVAILABLE",
             latitude=data.get("latitude") or 0,
             longitude=data.get("longitude") or 0,
+            description=data.get("description") or "",
         )
         image_file = files.get("image")
         if image_file:
@@ -83,6 +100,7 @@ def admin_lot_create(request):
             "status": "AVAILABLE",
             "latitude": "",
             "longitude": "",
+            "description": "",
         },
         "stages": stages,
         "lot": None,
@@ -105,6 +123,7 @@ def admin_lot_edit(request, lot_id):
         lot.status = data.get("status") or lot.status
         lot.latitude = data.get("latitude") or 0
         lot.longitude = data.get("longitude") or 0
+        lot.description = data.get("description") or ""
         delete_ids = data.getlist("delete_images")
         if delete_ids:
             images_to_delete = LotImage.objects.filter(lot=lot, id__in=delete_ids)
@@ -140,6 +159,7 @@ def admin_lot_edit(request, lot_id):
             "status": lot.status,
             "latitude": lot.latitude,
             "longitude": lot.longitude,
+            "description": lot.description,
         },
         "stages": stages,
         "lot": lot,

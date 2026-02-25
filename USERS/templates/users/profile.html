@@ -6,7 +6,7 @@
         <div class="col-md-6" data-aos="fade-up">
             <div class="premium-card border-0 shadow-lg p-4">
                 <h1 class="h4 fw-bold text-dark mb-2">Mi perfil</h1>
-                <p class="text-muted small mb-4">Actualiza tu correo y contraseña de acceso.</p>
+                <p class="text-muted small mb-4">Actualiza tu información personal y contraseña de acceso.</p>
 
                 {% if messages %}
                 <div class="mb-3">
@@ -21,10 +21,22 @@
                 <form method="post" novalidate>
                     {% csrf_token %}
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold text-muted">Correo electrónico</label>
-                        <input type="email" name="email" class="form-control"
-                            value="{{ form.email }}" required>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Nombre(s)</label>
+                            <input type="text" name="first_name" class="form-control"
+                                value="{{ form.first_name }}" placeholder="Tu nombre">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Apellidos</label>
+                            <input type="text" name="last_name" class="form-control"
+                                value="{{ form.last_name }}" placeholder="Tus apellidos">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold text-muted">Correo electrónico</label>
+                            <input type="email" name="email" class="form-control"
+                                value="{{ form.email }}" required>
+                        </div>
                     </div>
 
                     <hr class="my-4">

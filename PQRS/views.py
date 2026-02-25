@@ -11,6 +11,7 @@ from .models import PQRS
 class PQRSCreateView(LoginRequiredMixin, CreateView):
     model = PQRS
     fields = ['type', 'message']
+    template_name = 'pqrs/pqrs_form.html'
     success_url = reverse_lazy('mypqrs_list')
 
     def form_valid(self, form):

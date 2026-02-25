@@ -256,6 +256,7 @@ def register_payment(request, purchase_id):
 class PaymentCreateView(CreateView):
     model = Payment
     fields = ['purchase', 'amount']
+    template_name = 'sales/payment_form.html'
     success_url = '/'
 
 

@@ -136,7 +136,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # Carpeta donde collectstatic pondrá todos los archivos estáticos (incluyendo admin)
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(
+    BASE_DIR, "staticfiles")
 
 # Tus archivos estáticos personalizados (CSS, JS propios del proyecto)
 #STATICFILES_DIRS = [

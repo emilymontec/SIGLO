@@ -7,6 +7,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <div class="container py-4">
+    {% if messages %}
+        {% for message in messages %}
+            {% if 'payment_success' in message.tags %}
+                <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4 p-4" data-aos="fade-down">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="bg-success bg-opacity-10 p-2 rounded-circle">
+                            <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0 fw-bold text-dark">{{ message }}</p>
+                            <p class="mb-0 small text-muted">Recuerda revisar tu carpeta de <strong>SPAM</strong> si no ves el correo en tu bandeja de entrada.</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert {% if message.tags == 'error' %}alert-danger bg-danger-subtle text-danger{% elif message.tags == 'warning' %}alert-warning bg-warning-subtle text-dark{% else %}alert-info bg-info-subtle text-info{% endif %} border-0 shadow-sm rounded-4 mb-4 p-3 fw-bold" data-aos="fade-down">
+                    <i class="bi bi-info-circle me-2"></i> {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
     <div class="row g-4" data-aos="fade-up">
         <div class="col-lg-5">
             <div class="premium-card h-100 shadow-lg border-0">

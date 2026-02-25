@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -5,6 +6,7 @@ from django.core.mail import EmailMessage
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic.edit import CreateView
+from django.conf import settings
 
 from decimal import Decimal
 
@@ -124,18 +126,28 @@ def register_payment(request, purchase_id):
                 return render(request, 'sales/register_payment.html', context)
 
             payment = Payment.objects.create(purchase=purchase, amount=amount)
+            # Refrescamos para obtener la fecha auto-generada y el saldo actualizado
+            payment.refresh_from_db()
+            purchase.refresh_from_db()
 
             if purchase.client.email:
                 subject = "Comprobante de pago - SIGLO"
+                # Usamos la fecha del pago o la fecha actual como respaldo
+                payment_date_str = payment.payment_date.strftime("%d/%m/%Y") if payment.payment_date else "Hoy"
+                
                 body_lines = [
-                    f"Hola {purchase.client.get_full_name() or purchase.client.email},",
+                    f"Hola {purchase.client.get_full_name() or purchase.client.username},",
                     "",
                     "Hemos registrado tu pago en SIGLO.",
                     "",
                     f"Compra: #{purchase.id}",
                     f"Monto pagado: ${payment.amount}",
-                    f"Fecha de pago: {payment.payment_date}",
+                    f"Fecha de pago: {payment_date_str}",
                     f"Saldo pendiente: ${purchase.balance()}",
+                    "",
+                    "Adjunto encontrarás el comprobante de tu pago.",
+                    "",
+                    "Nota: Si no encuentras el correo en tu bandeja de entrada, por favor revisa tu carpeta de SPAM o correo no deseado.",
                     "",
                     "Gracias por tu confianza.",
                 ]
@@ -144,6 +156,7 @@ def register_payment(request, purchase_id):
                 email = EmailMessage(
                     subject,
                     body,
+                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
                     to=[purchase.client.email],
                 )
 
@@ -152,39 +165,91 @@ def register_payment(request, purchase_id):
                     f"Compra: #{purchase.id}\n"
                     f"Cliente: {purchase.client.get_full_name() or purchase.client.email}\n"
                     f"Monto: ${payment.amount}\n"
-                    f"Fecha: {payment.payment_date}\n"
+                    f"Fecha: {payment_date_str}\n"
                     f"Saldo pendiente: ${purchase.balance()}\n"
                 )
 
                 try:
+                    import qrcode
                     from io import BytesIO
-                    from reportlab.lib.pagesizes import letter
-                    from reportlab.pdfgen import canvas
-
-                    buffer = BytesIO()
-                    pdf = canvas.Canvas(buffer, pagesize=letter)
-                    textobject = pdf.beginText(40, 750)
-                    for line in attachment_content.split("\n"):
-                        textobject.textLine(line)
-                    pdf.drawText(textobject)
-                    pdf.showPage()
-                    pdf.save()
-                    pdf_bytes = buffer.getvalue()
-                    buffer.close()
-
-                    email.attach(
-                        filename=f"comprobante_pago_{payment.id}.pdf",
-                        content=pdf_bytes,
-                        mimetype="application/pdf",
+                    
+                    # Generar el contenido para el QR (ID de pago, ID de compra, Monto)
+                    qr_data = (
+                        f"SIGLO-COMPROBANTE\n"
+                        f"Pago: #{payment.id}\n"
+                        f"Compra: #{purchase.id}\n"
+                        f"Monto: ${payment.amount}\n"
+                        f"Fecha: {payment_date_str}"
                     )
-                except ImportError:
+                    
+                    # Crear el objeto QR
+                    qr = qrcode.QRCode(
+                        version=1,
+                        error_correction=qrcode.constants.ERROR_CORRECT_L,
+                        box_size=10,
+                        border=4,
+                    )
+                    qr.add_data(qr_data)
+                    qr.make(fit=True)
+
+                    # Crear la imagen
+                    img = qr.make_image(fill_color="black", back_color="white")
+                    
+                    # Guardar en un buffer
+                    qr_buffer = BytesIO()
+                    img.save(qr_buffer, format="PNG")
+                    qr_bytes = qr_buffer.getvalue()
+                    qr_buffer.close()
+
+                    # Adjuntar como imagen PNG
+                    email.attach(
+                        filename=f"comprobante_qr_{payment.id}.png",
+                        content=qr_bytes,
+                        mimetype="image/png",
+                    )
+                    
+                    # También adjuntar el PDF si es posible
+                    try:
+                        from reportlab.lib.pagesizes import letter
+                        from reportlab.pdfgen import canvas
+                        
+                        pdf_buffer = BytesIO()
+                        pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
+                        textobject = pdf.beginText(40, 750)
+                        for line in attachment_content.split("\n"):
+                            textobject.textLine(line)
+                        pdf.drawText(textobject)
+                        pdf.showPage()
+                        pdf.save()
+                        pdf_bytes = pdf_buffer.getvalue()
+                        pdf_buffer.close()
+                        
+                        email.attach(
+                            filename=f"comprobante_pago_{payment.id}.pdf",
+                            content=pdf_bytes,
+                            mimetype="application/pdf",
+                        )
+                    except Exception:
+                        pass
+
+                except Exception as e:
+                    # Si falla qrcode, enviamos el texto plano como último recurso
                     email.attach(
                         filename=f"comprobante_pago_{payment.id}.txt",
                         content=attachment_content,
                         mimetype="text/plain",
                     )
 
-                email.send(fail_silently=True)
+                try:
+                    email.send()
+                    messages.add_message(request, messages.SUCCESS, 
+                                       "Pago registrado con éxito. Hemos enviado el comprobante a tu correo electrónico.", 
+                                       extra_tags='payment_success')
+                except Exception as e:
+                    messages.warning(request, f"Pago registrado, pero hubo un problema al enviar el correo: {str(e)}")
+            else:
+                messages.success(request, "Pago registrado con éxito.")
+            
             update_lots_status_for_purchase(purchase)
         return redirect('purchase_detail', purchase_id=purchase.id)
 

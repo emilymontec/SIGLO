@@ -33,7 +33,7 @@ from LOTES.views import (
     lot_list_api,
     map_view,
 )
-from USERS.views import register_view, admin_user_list, profile_view, activate_account
+from USERS.views import register_view, admin_user_list, profile_view, activate_account, CustomLoginView
 from PQRS.views import PQRSCreateView, admin_pqrs_edit, admin_pqrs_list, my_pqrs_list
 from SALES.views import (
     admin_payment_create,
@@ -91,6 +91,7 @@ urlpatterns = [
     path('panel/contenido/', project_views.admin_content, name='admin_content'),
     path('panel/usuarios/', admin_user_list, name='admin_user_list'),
     path('perfil/', profile_view, name='profile'),
+    path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', logout_view, name='logout'),
     path('accounts/logout/', logout_view),
     path('accounts/profile/', profile_redirect),

@@ -16,10 +16,20 @@
                     <p class="text-muted small fw-medium">Ingresa para gestionar tu inversión.</p>
                 </div>
 
-                {% if form.errors %}
-                <div class="alert alert-danger border-0 small rounded-3 mb-4 p-3 bg-danger-subtle text-danger fw-bold">
-                    <i class="bi bi-exclamation-circle me-2"></i> Credenciales no válidas.
-                </div>
+                {% if form.is_unverified %}
+                    <div class="alert alert-verification border-0 small rounded-4 mb-4 p-3 fw-bold">
+                        <i class="bi bi-exclamation-circle me-2"></i> Correo no verificado. Por favor revisa tu bandeja de entrada.
+                    </div>
+                {% elif messages %}
+                    {% for message in messages %}
+                        <div class="alert {% if 'activated' in message.tags %}alert-verification{% elif 'error' in message.tags %}alert-danger bg-danger-subtle text-danger{% else %}alert-info bg-info-subtle text-info{% endif %} border-0 small rounded-4 mb-4 p-3 fw-bold">
+                            <i class="bi {% if 'activated' in message.tags %}bi-check-circle{% elif 'error' in message.tags %}bi-exclamation-circle{% else %}bi-info-circle{% endif %} me-2"></i> {{ message }}
+                        </div>
+                    {% endfor %}
+                {% elif form.errors %}
+                    <div class="alert alert-danger border-0 small rounded-4 mb-4 p-3 bg-danger-subtle text-danger fw-bold">
+                        <i class="bi bi-exclamation-circle me-2"></i> Credenciales no válidas.
+                    </div>
                 {% endif %}
 
                 <form method="post">

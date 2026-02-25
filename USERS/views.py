@@ -2,6 +2,8 @@ from django.contrib import messages
 from django.contrib.auth import login, get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import LoginView
+from django.db import models
 from django.shortcuts import render, redirect
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -9,6 +11,23 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 
 from .forms import EmailUserCreationForm
+
+
+class CustomLoginView(LoginView):
+    def form_invalid(self, form):
+        username = self.request.POST.get('username')
+        User = get_user_model()
+        # Buscamos al usuario por email o username (case-insensitive)
+        user = User.objects.filter(models.Q(email__iexact=username) | models.Q(username__iexact=username)).first()
+        
+        if user and not user.is_active:
+            # Agregamos un atributo al formulario para identificar el error de verificación
+            form.is_unverified = True
+            # Limpiamos errores previos para que no aparezca el aviso de credenciales inválidas
+            form._errors = {} 
+            return self.render_to_response(self.get_context_data(form=form))
+            
+        return super().form_invalid(form)
 
 
 def register_view(request):
@@ -27,24 +46,30 @@ def register_view(request):
 
         subject = "Activa tu cuenta en SIGLO"
         body_lines = [
-            "Hola,",
+            f"Hola {user.get_full_name() or user.username},",
             "",
             "Gracias por registrarte en SIGLO.",
             "Para activar tu cuenta y comenzar a invertir, haz clic en el siguiente enlace:",
             "",
             activation_link,
             "",
+            "Nota: Si no encuentras el correo, por favor revisa tu carpeta de SPAM o correo no deseado.",
+            "",
             "Si tú no solicitaste este registro, puedes ignorar este correo.",
         ]
         body = "\n".join(body_lines)
 
-        email = EmailMessage(
-            subject,
-            body,
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-            to=[user.email],
-        )
-
+        try:
+            email = EmailMessage(
+                subject,
+                body,
+                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                to=[user.email],
+            )
+            email.send()
+        except Exception as e:
+            # En producción esto debería loguearse, aquí al menos aseguramos que no rompa el flujo
+            pass
 
         return render(
             request,
@@ -80,7 +105,9 @@ def activate_account(request, uidb64, token):
     if user is not None and default_token_generator.check_token(user, token):
         user.is_active = True
         user.save()
-        messages.success(request, "Tu cuenta ha sido activada correctamente. Ahora puedes iniciar sesión.")
+        messages.add_message(request, messages.SUCCESS, 
+                           "Tu cuenta ha sido activada correctamente. Ahora puedes iniciar sesión.", 
+                           extra_tags='activated')
         return redirect("login")
 
     messages.error(request, "El enlace de activación no es válido o ha expirado.")

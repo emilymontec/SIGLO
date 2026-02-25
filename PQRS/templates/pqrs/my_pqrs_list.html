@@ -1,74 +1,64 @@
 {% extends "index.html" %}
 
-{% block content %}
-<div class="row mt-5">
-    <div class="col-12" data-aos="fade-up">
-        <div class="d-flex justify-content-between align-items-center mb-5">
-            <div>
-                <h1 class="display-5 fw-bold text-white">Consola de Solicitudes</h1>
-                <p class="text-muted mb-0">Monitorización en tiempo real de tus PQRS registradas.</p>
-            </div>
-            <a href="{% url 'pqrs_create' %}" class="btn btn-info px-4">
-                <i class="bi bi-plus-lg"></i> Nueva Gestión
-            </a>
-        </div>
+{% block title %}Mis Solicitudes{% endblock %}
 
-        <div class="premium-card p-0 overflow-hidden shadow-lg">
-            {% if items %}
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0" style="color: var(--text-main);">
-                    <thead>
-                        <tr class="border-white border-opacity-10">
-                            <th class="py-4 ps-4 text-muted small text-uppercase fw-bold letter-spacing-1">ID TICKET
-                            </th>
-                            <th class="py-4 text-muted small text-uppercase fw-bold letter-spacing-1">SERVICIO</th>
-                            <th class="py-4 text-muted small text-uppercase fw-bold letter-spacing-1">DESCRIPCIÓN</th>
-                            <th class="py-4 pe-4 text-muted small text-uppercase fw-bold letter-spacing-1 text-end">
-                                ESTADO</th>
-                        </tr>
-                    </thead>
-                    <tbody class="border-top-0">
-                        {% for pq in items %}
-                        <tr class="border-white border-opacity-5" style="transition: var(--transition);">
-                            <td class="py-4 ps-4 fw-bold text-primary">#{{ pq.id }}</td>
-                            <td class="py-4">
-                                <span
-                                    class="badge bg-white bg-opacity-5 text-white border border-white border-opacity-10 px-3 py-2 rounded-pill fw-medium">
-                                    {{ pq.get_type_display }}
-                                </span>
-                            </td>
-                            <td class="py-4 small text-muted">{{ pq.message|truncatechars:100 }}</td>
-                            <td class="py-4 pe-4 text-end">
-                                <span
-                                    class="badge
-                                    {% if pq.status == 'OPEN' %}bg-warning text-dark
-                                    {% else %}bg-success text-light{% endif %}
-                                    bg-opacity-20 text-opacity-100 border border-current px-3 py-2 rounded-pill">
-                                    {{ pq.get_status_display }}
-                                </span>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="p-5 text-center">
-                <div class="mb-4 d-inline-block p-4 rounded-circle"
-                    style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);">
-                    <i class="bi bi-mailbox2-flag display-3 text-muted opacity-25"></i>
-                </div>
-                <p class="mb-0 text-muted fw-medium h5">No se registran solicitudes activas.</p>
-                <p class="text-muted small mt-2">Inicia una nueva gestión para verla reflejada aquí.</p>
-            </div>
-            {% endif %}
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4" data-aos="fade-up">
+        <div>
+            <h1 class="h3 fw-bold text-dark mb-1">Mis Solicitudes</h1>
+            <p class="text-muted small mb-0">Monitorización en tiempo real de tus PQRS registradas.</p>
         </div>
+        <a href="{% url 'pqrs_create' %}" class="btn btn-accent btn-sm px-4">
+            <i class="bi bi-plus-lg me-1"></i> Nueva solicitud
+        </a>
+    </div>
+
+    <div class="premium-card p-0 overflow-hidden shadow-lg" data-aos="fade-up" data-aos-delay="50">
+        {% if items %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="color: var(--text-main);">
+                <thead>
+                    <tr class="border-white border-opacity-10">
+                        <th class="py-3 ps-4 text-muted extra-small text-uppercase fw-bold tracking-wider">ID Ticket</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold tracking-wider">Servicio</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold tracking-wider">Descripción</th>
+                        <th class="py-3 pe-4 text-end text-muted extra-small text-uppercase fw-bold tracking-wider">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pq in items %}
+                    <tr class="border-white border-opacity-5">
+                        <td class="py-3 ps-4 fw-bold text-primary">#{{ pq.id }}</td>
+                        <td class="py-3">
+                            <span class="badge bg-light text-dark border border-dark border-opacity-10 px-3 py-2 rounded-pill fw-medium extra-small">
+                                {{ pq.get_type_display }}
+                            </span>
+                        </td>
+                        <td class="py-3 small text-muted">{{ pq.message|truncatechars:100 }}</td>
+                        <td class="py-3 pe-4 text-end">
+                            <span class="badge
+                                {% if pq.status == 'OPEN' %}bg-warning text-dark
+                                {% else %}bg-success-subtle text-success{% endif %}
+                                px-3 py-2 rounded-pill extra-small fw-bold">
+                                {{ pq.get_status_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <div class="mb-4 d-inline-block p-4 rounded-circle"
+                style="background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);">
+                <i class="bi bi-mailbox2-flag display-3 text-muted opacity-25"></i>
+            </div>
+            <p class="mb-0 text-muted fw-medium h5">No se registran solicitudes activas.</p>
+            <p class="text-muted small mt-2">Inicia una nueva gestión para verla reflejada aquí.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
-
-<style>
-    .table-hover tbody tr:hover {
-        background-color: rgba(255, 255, 255, 0.02) !important;
-    }
-</style>
 {% endblock %}

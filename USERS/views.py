@@ -5,9 +5,10 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
 from django.db import models
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.conf import settings
 
 from .forms import EmailUserCreationForm
@@ -45,30 +46,28 @@ def register_view(request):
         )
 
         subject = "Activa tu cuenta en SIGLO"
-        body_lines = [
-            f"Hola {user.get_full_name() or user.username},",
-            "",
-            "Gracias por registrarte en SIGLO.",
-            "Para activar tu cuenta y comenzar a invertir, haz clic en el siguiente enlace:",
-            "",
-            activation_link,
-            "",
-            "Nota: Si no encuentras el correo, por favor revisa tu carpeta de SPAM o correo no deseado.",
-            "",
-            "Si tú no solicitaste este registro, puedes ignorar este correo.",
-        ]
-        body = "\n".join(body_lines)
+        
+        # Contexto para la plantilla HTML
+        context = {
+            'user_name': user.get_full_name() or user.username,
+            'activation_link': activation_link,
+        }
+        
+        # Renderizar la versión HTML y de texto plano
+        html_content = render_to_string('emails/activation_email.html', context)
+        text_content = f"Hola {context['user_name']},\n\nGracias por registrarte en SIGLO.\n\nPara activar tu cuenta, haz clic en el siguiente enlace:\n{activation_link}\n\nNota: Si no encuentras el correo, revisa tu carpeta de SPAM."
 
         try:
             email = EmailMessage(
                 subject,
-                body,
+                html_content,
                 from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
                 to=[user.email],
             )
+            email.content_subtype = "html"
             email.send()
         except Exception as e:
-            # En producción esto debería loguearse, aquí al menos aseguramos que no rompa el flujo
+            # En producción esto debería loguearse
             pass
 
         return render(

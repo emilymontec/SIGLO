@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.contrib.auth import views as auth_views
 from django.contrib import admin
 from django.contrib.auth import logout
 from django.shortcuts import redirect
@@ -95,5 +96,12 @@ urlpatterns = [
     path('logout/', logout_view, name='logout'),
     path('accounts/logout/', logout_view),
     path('accounts/profile/', profile_redirect),
+    
+    # Password Reset Overrides to support HTML
+    path('accounts/password_reset/', auth_views.PasswordResetView.as_view(
+        html_email_template_name='registration/password_reset_email.html',
+        subject_template_name='registration/password_reset_subject.txt'
+    ), name='password_reset'),
+    
     path('accounts/', include('django.contrib.auth.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

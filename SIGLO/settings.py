@@ -147,13 +147,15 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # STMP
+import os
+
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 EMAIL_HOST = "in-v3.mailjet.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "..."
-EMAIL_HOST_PASSWORD = "..."
+EMAIL_HOST_USER = os.environ.get("MAILJET_API_KEY")
+EMAIL_HOST_PASSWORD = os.environ.get("MAILJET_SECRET_KEY")
 
 DEFAULT_FROM_EMAIL = "siglo.sys.py@gmail.com"

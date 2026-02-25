@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #171717;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #171717;
+            color: #ffffff;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .footer {
+            background-color: #f1f5f9;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #64748b;
+        }
+        .btn {
+            display: inline-block;
+            padding: 14px 30px;
+            background-color: #FACC15;
+            color: #171717 !important;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .alert-spam {
+            background-color: #fffbeb;
+            border-left: 4px solid #facc15;
+            padding: 15px;
+            margin-top: 25px;
+            font-size: 13px;
+            color: #92400e;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-purple { background-color: #818CF8; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SIGLO</h1>
+            <p style="margin-top: 10px; opacity: 0.8; font-size: 14px;">Innovación Inmobiliaria</p>
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+            
+            <div class="alert-spam">
+                <strong>Nota:</strong> Si no encuentras este correo en tu bandeja de entrada, por favor revisa tu carpeta de <strong>SPAM</strong> o correo no deseado.
+            </div>
+        </div>
+        <div class="footer">
+            <p>&copy; 2026 SIGLO - Todos los derechos reservados.</p>
+            <p>Este es un correo automático, por favor no respondas a este mensaje.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -2,9 +2,10 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.views.generic.edit import CreateView
 from django.conf import settings
 
@@ -135,30 +136,26 @@ def register_payment(request, purchase_id):
                 # Usamos la fecha del pago o la fecha actual como respaldo
                 payment_date_str = payment.payment_date.strftime("%d/%m/%Y") if payment.payment_date else "Hoy"
                 
-                body_lines = [
-                    f"Hola {purchase.client.get_full_name() or purchase.client.username},",
-                    "",
-                    "Hemos registrado tu pago en SIGLO.",
-                    "",
-                    f"Compra: #{purchase.id}",
-                    f"Monto pagado: ${payment.amount}",
-                    f"Fecha de pago: {payment_date_str}",
-                    f"Saldo pendiente: ${purchase.balance()}",
-                    "",
-                    "Adjunto encontrarás el comprobante de tu pago.",
-                    "",
-                    "Nota: Si no encuentras el correo en tu bandeja de entrada, por favor revisa tu carpeta de SPAM o correo no deseado.",
-                    "",
-                    "Gracias por tu confianza.",
-                ]
-                body = "\n".join(body_lines)
+                # Contexto para la plantilla HTML
+                context = {
+                    'user_name': purchase.client.get_full_name() or purchase.client.username,
+                    'purchase_id': purchase.id,
+                    'amount': payment.amount,
+                    'payment_date': payment_date_str,
+                    'balance': purchase.balance(),
+                }
+                
+                # Renderizar la versión HTML y de texto plano
+                html_content = render_to_string('emails/payment_receipt_email.html', context)
+                text_content = f"Hola {context['user_name']},\n\nHemos registrado tu pago de ${payment.amount} para la compra #{purchase.id}.\nSaldo pendiente: ${context['balance']}\n\nNota: Si no encuentras el correo, revisa tu carpeta de SPAM."
 
                 email = EmailMessage(
                     subject,
-                    body,
+                    html_content,
                     from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
                     to=[purchase.client.email],
                 )
+                email.content_subtype = "html"
 
                 attachment_content = (
                     f"Comprobante de pago SIGLO\n\n"

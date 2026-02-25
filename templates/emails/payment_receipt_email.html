@@ -1,0 +1,34 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<h2 style="margin-bottom: 20px; font-size: 22px; color: #171717;">¡Hola, {{ user_name }}!</h2>
+
+<p style="margin-bottom: 15px; font-size: 16px;">Hemos registrado exitosamente tu pago en <strong>SIGLO</strong>.</p>
+
+<div style="background-color: #f8fafc; border-radius: 12px; padding: 25px; margin: 25px 0;">
+    <h3 style="margin-bottom: 20px; font-size: 18px; color: #171717; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">Detalles del Pago</h3>
+    
+    <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 8px 0; color: #64748b;">ID de Compra:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold;">#{{ purchase_id }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: #64748b;">Monto Pagado:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #10b981;">${{ amount }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: #64748b;">Fecha:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold;">{{ payment_date }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 8px 0; color: #64748b;">Saldo Pendiente:</td>
+            <td style="padding: 8px 0; text-align: right; font-weight: bold; color: #818CF8;">${{ balance }}</td>
+        </tr>
+    </table>
+</div>
+
+<p style="margin-bottom: 20px; font-size: 15px;">Adjunto a este correo encontrarás tu comprobante oficial con código QR y detalles técnicos de la transacción.</p>
+
+<p style="margin-top: 30px; font-size: 16px; font-weight: bold; color: #171717;">¡Gracias por tu confianza en SIGLO!</p>
+{% endblock %}

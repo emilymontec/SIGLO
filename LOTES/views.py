@@ -57,13 +57,13 @@ def admin_lot_list(request):
     return render(request, "lotes/admin_lot_list.html", {"lots": lots})
 
 
-@staff_member_required
+@admin_required
 def admin_stage_list(request):
     stages = Stage.objects.all().order_by("name")
     return render(request, "lotes/admin_stage_list.html", {"stages": stages})
 
 
-@staff_member_required
+@admin_required
 def admin_lot_create(request):
     if request.method == "POST":
         data = request.POST
@@ -108,7 +108,7 @@ def admin_lot_create(request):
     return render(request, "lotes/admin_lot_form.html", context)
 
 
-@staff_member_required
+@admin_required
 def admin_lot_edit(request, lot_id):
     lot = get_object_or_404(Lot, pk=lot_id)
 
@@ -167,7 +167,7 @@ def admin_lot_edit(request, lot_id):
     return render(request, "lotes/admin_lot_form.html", context)
 
 
-@staff_member_required
+@admin_required
 def admin_stage_create(request):
     if request.method == "POST":
         data = request.POST
@@ -187,7 +187,7 @@ def admin_stage_create(request):
     return render(request, "lotes/admin_stage_form.html", context)
 
 
-@staff_member_required
+@admin_required
 def admin_stage_edit(request, stage_id):
     stage = get_object_or_404(Stage, pk=stage_id)
 

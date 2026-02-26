@@ -13,6 +13,8 @@ from django.conf import settings
 
 from .forms import EmailUserCreationForm
 
+import logging
+
 
 class CustomLoginView(LoginView):
     def form_invalid(self, form):
@@ -56,19 +58,22 @@ def register_view(request):
         # Renderizar la versión HTML y de texto plano
         html_content = render_to_string('emails/activation_email.html', context)
         text_content = f"Hola {context['user_name']},\n\nGracias por registrarte en SIGLO.\n\nPara activar tu cuenta, haz clic en el siguiente enlace:\n{activation_link}\n\nNota: Si no encuentras el correo, revisa tu carpeta de SPAM."
-
+        
+        logger = logging.getLogger(__name__)
+        
         try:
             email = EmailMessage(
                 subject,
                 html_content,
-                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+                from_email=settings.DEFAULT_FROM_EMAIL,
                 to=[user.email],
-            )
+                )
+            
             email.content_subtype = "html"
             email.send()
+            
         except Exception as e:
-            # En producción esto debería loguearse
-            pass
+            logger.error(f"Error enviando correo de activación a {user.email}: {e}")
 
         return render(
             request,

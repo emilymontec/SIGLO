@@ -59,9 +59,6 @@ LOGIN_URL = '/accounts/login/'         # o la ruta de tu login personalizado
 LOGIN_REDIRECT_URL = '/'               # a donde va después de iniciar sesión
 LOGOUT_REDIRECT_URL = '/'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'no-reply@siglo.local'
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',

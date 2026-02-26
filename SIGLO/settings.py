@@ -96,12 +96,17 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("PG_DB"),
+        "USER": os.environ.get("PG_USER"),
+        "PASSWORD": os.environ.get("PG_PASSWORD"),
+        "HOST": os.environ.get("PG_HOST"),
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -160,7 +165,7 @@ EMAIL_HOST = "in-v3.mailjet.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = "d27274eb25bf01030e2cdd5350e74f15"
-EMAIL_HOST_PASSWORD = "71d8cd1cee52ccae42b2f95bf9b08358"
+EMAIL_HOST_USER = os.environ.get("MJ_APIKEY_PUBLIC")
+EMAIL_HOST_PASSWORD = os.environ.get("MJ_APIKEY_PRIVATE")
 
 DEFAULT_FROM_EMAIL = "siglo.sys.py@gmail.com"

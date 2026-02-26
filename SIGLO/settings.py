@@ -55,8 +55,9 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
 ]
 
-LOGIN_REDIRECT_URL = 'dashboard'
-LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = '/accounts/login/'         # o la ruta de tu login personalizado
+LOGIN_REDIRECT_URL = '/'               # a donde va después de iniciar sesión
+LOGOUT_REDIRECT_URL = '/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'no-reply@siglo.local'
@@ -153,16 +154,10 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # STMP
 import os
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-EMAIL_HOST = "in-v3.mailjet.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = os.environ.get("MJ_APIKEY_PUBLIC")
-EMAIL_HOST_PASSWORD = os.environ.get("MJ_APIKEY_PRIVATE")
-
-DEFAULT_FROM_EMAIL = "siglo.sys.py@gmail.com"
+EMAIL_BACKEND = 'django_mailjet.backends.MailjetBackend'
+EMAIL_HOST_USER = os.environ.get('MJ_APIKEY_PUBLIC')
+EMAIL_HOST_PASSWORD = os.environ.get('MJ_APIKEY_PRIVATE')
+DEFAULT_FROM_EMAIL = 'siglo.sys.py@gmail.com'
 
 # MEDIA
 CLOUDINARY_STORAGE = {

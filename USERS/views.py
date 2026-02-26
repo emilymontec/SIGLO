@@ -59,6 +59,7 @@ def register_view(request):
         html_content = render_to_string('emails/activation_email.html', context)
         text_content = f"Hola {context['user_name']},\n\nGracias por registrarte en SIGLO.\n\nPara activar tu cuenta, haz clic en el siguiente enlace:\n{activation_link}\n\nNota: Si no encuentras el correo, revisa tu carpeta de SPAM."
         
+        import os
         logger = logging.getLogger(__name__)
         
         try:
@@ -73,9 +74,10 @@ def register_view(request):
             email.send()
             
         except Exception as e:
-            logger.error(f"ERROR CORREO: {type(e).__name__}: {e}")
-            # También imprímelo directo
-            print(f"ERROR CORREO: {type(e).__name__}: {e}")
+            print("MJ_PUBLIC:", os.environ.get('MJ_APIKEY_PUBLIC'))
+            print("MJ_PRIVATE:", os.environ.get('MJ_APIKEY_PRIVATE'))
+            print("FROM EMAIL:", settings.DEFAULT_FROM_EMAIL)
+            print("TO EMAIL:", user.email)
 
         return render(
             request,

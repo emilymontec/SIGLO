@@ -45,8 +45,9 @@ INSTALLED_APPS = [
     'SALES',
     'PQRS',
     'PROJECT_INFO',
-    "cloudinary",
-    "cloudinary_storage",
+    'django_mailjet',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 AUTH_USER_MODEL = 'USERS.User'

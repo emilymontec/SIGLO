@@ -5,7 +5,7 @@ from decimal import Decimal
 from io import BytesIO
 
 from django.contrib import messages
-from USERS.decorators import admin_required
+from USERS.views import admin_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings

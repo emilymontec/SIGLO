@@ -1,4 +1,4 @@
-from USERS.decorators import admin_required
+from USERS.views import admin_required
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.shortcuts import redirect, render

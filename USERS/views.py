@@ -14,6 +14,7 @@ from django.conf import settings
 from .forms import EmailUserCreationForm
 
 import logging
+from mailjet_rest import Client
 
 
 class CustomLoginView(LoginView):
@@ -63,21 +64,16 @@ def register_view(request):
         logger = logging.getLogger(__name__)
         
         try:
-            email = EmailMessage(
-                subject,
-                html_content,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[user.email],
+            esult = send_mailjet_email(
+                subject=subject,
+                html_content=html_content,
+                to_email=user.email,
+                to_name=user.get_full_name() or user.username
                 )
-            
-            email.content_subtype = "html"
-            email.send()
+            print("Mailjet response:", result.status_code, result.json())
             
         except Exception as e:
-            print("MJ_PUBLIC:", os.environ.get('MJ_APIKEY_PUBLIC'))
-            print("MJ_PRIVATE:", os.environ.get('MJ_APIKEY_PRIVATE'))
-            print("FROM EMAIL:", settings.DEFAULT_FROM_EMAIL)
-            print("TO EMAIL:", user.email)
+            print(f"ERROR CORREO: {type(e).__name__}: {e}")
 
         return render(
             request,
@@ -183,3 +179,31 @@ def profile_view(request):
         }
     }
     return render(request, "users/profile.html", context)
+
+import os
+
+def send_mailjet_email(subject, html_content, to_email, to_name=''):
+    mailjet = Client(
+        auth=(os.environ.get('MJ_APIKEY_PUBLIC'), os.environ.get('MJ_APIKEY_PRIVATE')),
+        version='v3.1'
+    )
+    data = {
+        'Messages': [
+            {
+                'From': {
+                    'Email': 'siglo.sys.py@gmail.com',
+                    'Name': 'SIGLO'
+                },
+                'To': [
+                    {
+                        'Email': to_email,
+                        'Name': to_name
+                    }
+                ],
+                'Subject': subject,
+                'HTMLPart': html_content,
+            }
+        ]
+    }
+    result = mailjet.send.create(data=data)
+    return result

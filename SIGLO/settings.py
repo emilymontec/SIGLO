@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'SALES',
     'PQRS',
     'PROJECT_INFO',
+    "cloudinary",
+    "cloudinary_storage",
 ]
 
 AUTH_USER_MODEL = 'USERS.User'
@@ -96,17 +98,9 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("PG_DB"),
-        "USER": os.environ.get("PG_USER"),
-        "PASSWORD": os.environ.get("PG_PASSWORD"),
-        "HOST": os.environ.get("PG_HOST"),
-    }
+    "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -169,3 +163,12 @@ EMAIL_HOST_USER = os.environ.get("MJ_APIKEY_PUBLIC")
 EMAIL_HOST_PASSWORD = os.environ.get("MJ_APIKEY_PRIVATE")
 
 DEFAULT_FROM_EMAIL = "siglo.sys.py@gmail.com"
+
+# MEDIA
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get("CLOUDINARY_NAME"),
+    'API_KEY': os.environ.get("CLOUDINARY_KEY"),
+    'API_SECRET': os.environ.get("CLOUDINARY_SECRET"),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

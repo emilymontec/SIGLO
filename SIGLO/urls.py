@@ -34,7 +34,7 @@ from LOTES.views import (
     lot_list_api,
     map_view,
 )
-from USERS.views import register_view, admin_user_list, profile_view, activate_account, CustomLoginView
+from USERS.views import register_view, admin_user_list, profile_view, activate_account, CustomLoginView, custom_password_reset
 from PQRS.views import PQRSCreateView, admin_pqrs_edit, admin_pqrs_list, my_pqrs_list
 from SALES.views import (
     admin_payment_create,
@@ -98,10 +98,7 @@ urlpatterns = [
     path('accounts/profile/', profile_redirect),
     
     # Password Reset Overrides to support HTML
-    path('accounts/password_reset/', auth_views.PasswordResetView.as_view(
-        html_email_template_name='registration/password_reset_email.html',
-        subject_template_name='registration/password_reset_subject.txt'
-    ), name='password_reset'),
+    path('accounts/password_reset/', custom_password_reset, name='password_reset'),
     
     path('accounts/', include('django.contrib.auth.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

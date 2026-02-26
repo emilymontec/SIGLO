@@ -14,6 +14,26 @@ from decimal import Decimal
 from LOTES.models import Lot
 from .models import Payment, Purchase
 
+# Agrega esto junto a los otros imports
+from mailjet_rest import Client
+import os
+
+def send_mailjet_email(subject, html_content, to_email, to_name='', attachments=None):
+    mailjet = Client(
+        auth=(os.environ.get('MJ_APIKEY_PUBLIC'), os.environ.get('MJ_APIKEY_PRIVATE')),
+        version='v3.1'
+    )
+    message = {
+        'From': {'Email': 'siglo.sys.py@gmail.com', 'Name': 'SIGLO'},
+        'To': [{'Email': to_email, 'Name': to_name}],
+        'Subject': subject,
+        'HTMLPart': html_content,
+    }
+    if attachments:
+        message['Attachments'] = attachments  # lista de dicts con Base64Content, Filename, ContentType
+
+    result = mailjet.send.create(data={'Messages': [message]})
+    return result
 
 def update_lots_status_for_purchase(purchase):
     lots = purchase.lots.all()
@@ -130,112 +150,99 @@ def register_payment(request, purchase_id):
             # Refrescamos para obtener la fecha auto-generada y el saldo actualizado
             payment.refresh_from_db()
             purchase.refresh_from_db()
-
+            
             if purchase.client.email:
                 subject = "Comprobante de pago - SIGLO"
-                # Usamos la fecha del pago o la fecha actual como respaldo
                 payment_date_str = payment.payment_date.strftime("%d/%m/%Y") if payment.payment_date else "Hoy"
-                
-                # Contexto para la plantilla HTML
-                context = {
+                email_context = {
                     'user_name': purchase.client.get_full_name() or purchase.client.username,
                     'purchase_id': purchase.id,
                     'amount': payment.amount,
                     'payment_date': payment_date_str,
                     'balance': purchase.balance(),
-                }
+                    }
                 
-                # Renderizar la versión HTML y de texto plano
-                html_content = render_to_string('emails/payment_receipt_email.html', context)
-                text_content = f"Hola {context['user_name']},\n\nHemos registrado tu pago de ${payment.amount} para la compra #{purchase.id}.\nSaldo pendiente: ${context['balance']}\n\nNota: Si no encuentras el correo, revisa tu carpeta de SPAM."
-
-                email = EmailMessage(
-                    subject,
-                    html_content,
-                    from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-                    to=[purchase.client.email],
-                )
-                email.content_subtype = "html"
-
-                attachment_content = (
-                    f"Comprobante de pago SIGLO\n\n"
-                    f"Compra: #{purchase.id}\n"
-                    f"Cliente: {purchase.client.get_full_name() or purchase.client.email}\n"
-                    f"Monto: ${payment.amount}\n"
-                    f"Fecha: {payment_date_str}\n"
-                    f"Saldo pendiente: ${purchase.balance()}\n"
-                )
-
+                html_content = render_to_string('emails/payment_receipt_email.html', email_context)
+                attachments = []
+                
+                # QR code como adjunto
                 try:
                     import qrcode
                     from io import BytesIO
-                    
-                    # Generar el contenido para el QR (ID de pago, ID de compra, Monto)
+                    import base64
                     qr_data = (
                         f"SIGLO-COMPROBANTE\n"
                         f"Pago: #{payment.id}\n"
                         f"Compra: #{purchase.id}\n"
                         f"Monto: ${payment.amount}\n"
                         f"Fecha: {payment_date_str}"
-                    )
+                        )
                     
-                    # Crear el objeto QR
-                    qr = qrcode.QRCode(
-                        version=1,
-                        error_correction=qrcode.constants.ERROR_CORRECT_L,
-                        box_size=10,
-                        border=4,
-                    )
+                    qr = qrcode.QRCode(version=1, error_correction=qrcode.constants.ERROR_CORRECT_L, box_size=10, border=4)
                     qr.add_data(qr_data)
                     qr.make(fit=True)
-
-                    # Crear la imagen
                     img = qr.make_image(fill_color="black", back_color="white")
-                    
-                    # Guardar en un buffer
                     qr_buffer = BytesIO()
                     img.save(qr_buffer, format="PNG")
-                    qr_bytes = qr_buffer.getvalue()
+                    qr_b64 = base64.b64encode(qr_buffer.getvalue()).decode()
                     qr_buffer.close()
+                    attachments.append({
+                        'Filename': f'comprobante_qr_{payment.id}.png',
+                        'ContentType': 'image/png',
+                        'Base64Content': qr_b64,
+                        })
+                except Exception:
+                    pass
+                
+                    # PDF como adjunto
+                try:
+                    from reportlab.lib.pagesizes import letter
+                    from reportlab.pdfgen import canvas
+                    from io import BytesIO
+                    import base64
 
-                    # Adjuntar como imagen PNG
-                    email.attach(
-                        filename=f"comprobante_qr_{payment.id}.png",
-                        content=qr_bytes,
-                        mimetype="image/png",
+                    pdf_buffer = BytesIO()
+                    pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
+                    textobject = pdf.beginText(40, 750)
+                    for line in (
+                        f"Comprobante de pago SIGLO\n\n"
+                        f"Compra: #{purchase.id}\n"
+                        f"Cliente: {purchase.client.get_full_name() or purchase.client.email}\n"
+                        f"Monto: ${payment.amount}\n"
+                        f"Fecha: {payment_date_str}\n"
+                        f"Saldo pendiente: ${purchase.balance()}"
+                    ).split("\n"):
+                        textobject.textLine(line)
+                    pdf.drawText(textobject)
+                    pdf.showPage()
+                    pdf.save()
+                    pdf_b64 = base64.b64encode(pdf_buffer.getvalue()).decode()
+                    pdf_buffer.close()
+                    attachments.append({
+                        'Filename': f'comprobante_pago_{payment.id}.pdf',
+                        'ContentType': 'application/pdf',
+                        'Base64Content': pdf_b64,
+                    })
+                except Exception:
+                    pass
+
+                try:
+                    result = send_mailjet_email(
+                        subject=subject,
+                        html_content=html_content,
+                        to_email=purchase.client.email,
+                        to_name=purchase.client.get_full_name() or purchase.client.username,
+                        attachments=attachments,
                     )
-                    
-                    # También adjuntar el PDF si es posible
-                    try:
-                        from reportlab.lib.pagesizes import letter
-                        from reportlab.pdfgen import canvas
-                        
-                        pdf_buffer = BytesIO()
-                        pdf = canvas.Canvas(pdf_buffer, pagesize=letter)
-                        textobject = pdf.beginText(40, 750)
-                        for line in attachment_content.split("\n"):
-                            textobject.textLine(line)
-                        pdf.drawText(textobject)
-                        pdf.showPage()
-                        pdf.save()
-                        pdf_bytes = pdf_buffer.getvalue()
-                        pdf_buffer.close()
-                        
-                        email.attach(
-                            filename=f"comprobante_pago_{payment.id}.pdf",
-                            content=pdf_bytes,
-                            mimetype="application/pdf",
-                        )
-                    except Exception:
-                        pass
-
+                    print("Mailjet pago response:", result.status_code, result.json())
+                    messages.add_message(request, messages.SUCCESS,
+                                    "Pago registrado con éxito. Hemos enviado el comprobante a tu correo electrónico.",
+                                    extra_tags='payment_success')
                 except Exception as e:
-                    # Si falla qrcode, enviamos el texto plano como último recurso
-                    email.attach(
-                        filename=f"comprobante_pago_{payment.id}.txt",
-                        content=attachment_content,
-                        mimetype="text/plain",
-                    )
+                    print(f"ERROR CORREO PAGO: {type(e).__name__}: {e}")
+                    messages.warning(request, "Pago registrado, pero hubo un problema al enviar el correo.")
+            else:
+                messages.success(request, "Pago registrado con éxito.")
 
                 try:
                     email.send()

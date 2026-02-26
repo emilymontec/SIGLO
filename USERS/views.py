@@ -15,6 +15,10 @@ from .forms import EmailUserCreationForm
 
 import logging
 from mailjet_rest import Client
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 
 class CustomLoginView(LoginView):
@@ -207,3 +211,46 @@ def send_mailjet_email(subject, html_content, to_email, to_name=''):
     }
     result = mailjet.send.create(data=data)
     return result
+
+def custom_password_reset(request):
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            User = get_user_model()
+            users = User.objects.filter(email__iexact=email, is_active=True)
+            
+            for user in users:
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                token = default_token_generator.make_token(user)
+                reset_link = request.build_absolute_uri(
+                    f"/accounts/reset/{uid}/{token}/"
+                )
+                
+                html_content = render_to_string('registration/password_reset_email.html', {
+                    'user': user,
+                    'reset_link': reset_link,
+                    'uid': uid,
+                    'token': token,
+                })
+                
+                try:
+                    from mailjet_rest import Client
+                    mailjet = Client(
+                        auth=(os.environ.get('MJ_APIKEY_PUBLIC'), os.environ.get('MJ_APIKEY_PRIVATE')),
+                        version='v3.1'
+                    )
+                    mailjet.send.create(data={'Messages': [{
+                        'From': {'Email': settings.DEFAULT_FROM_EMAIL, 'Name': 'SIGLO'},
+                        'To': [{'Email': user.email, 'Name': user.get_full_name() or user.username}],
+                        'Subject': 'Restablece tu contraseña - SIGLO',
+                        'HTMLPart': html_content,
+                    }]})
+                except Exception as e:
+                    print(f"ERROR RESET EMAIL: {type(e).__name__}: {e}")
+            
+            return redirect('password_reset_done')
+    else:
+        form = PasswordResetForm()
+    
+    return render(request, 'registration/password_reset_form.html', {'form': form})

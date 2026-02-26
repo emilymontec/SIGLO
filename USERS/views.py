@@ -141,6 +141,8 @@ def custom_password_reset(request):
                     'reset_link': reset_link,
                     'uid': uid,
                     'token': token,
+                    'protocol': 'https' if request.is_secure() else 'http',
+                    'domain': request.get_host(),
                 })
 
                 try:

@@ -5,7 +5,7 @@ from decimal import Decimal
 from io import BytesIO
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+from USERS.decorators import admin_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
@@ -241,7 +241,7 @@ class PaymentCreateView(CreateView):
     success_url = '/'
 
 
-@staff_member_required
+@admin_required
 def validate_payment(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
     payment.is_validated = True
@@ -250,19 +250,19 @@ def validate_payment(request, payment_id):
     return redirect("admin_purchase_list")
 
 
-@staff_member_required
+@admin_required
 def admin_purchase_list(request):
     purchases = Purchase.objects.select_related("client").prefetch_related("lots").all().order_by("-created_at")
     return render(request, "sales/admin_purchase_list.html", {"purchases": purchases})
 
 
-@staff_member_required
+@admin_required
 def admin_payment_list(request):
     payments = Payment.objects.select_related("purchase", "purchase__client").all().order_by("-payment_date")
     return render(request, "sales/admin_payment_list.html", {"payments": payments})
 
 
-@staff_member_required
+@admin_required
 def admin_purchase_create(request):
     User = get_user_model()
     clients = User.objects.filter(role="CLIENT").order_by("email")
@@ -287,7 +287,7 @@ def admin_purchase_create(request):
     return render(request, "sales/admin_purchase_form.html", context)
 
 
-@staff_member_required
+@admin_required
 def admin_purchase_edit(request, purchase_id):
     User = get_user_model()
     purchase = get_object_or_404(Purchase, pk=purchase_id)
@@ -328,7 +328,7 @@ def admin_purchase_edit(request, purchase_id):
     return render(request, "sales/admin_purchase_form.html", context)
 
 
-@staff_member_required
+@admin_required
 def admin_payment_create(request):
     purchases = Purchase.objects.select_related("client").all().order_by("-created_at")
 
@@ -370,6 +370,6 @@ def admin_payment_create(request):
     return render(request, "sales/admin_payment_form.html", context)
 
 
-@staff_member_required
+@admin_required
 def admin_payment_edit(request, payment_id):
     return redirect("admin_payment_list")

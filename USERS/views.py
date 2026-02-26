@@ -17,6 +17,16 @@ from mailjet_rest import Client
 
 from .forms import EmailUserCreationForm
 
+
+from django.contrib.auth.decorators import user_passes_test
+
+def admin_required(view_func):
+    return user_passes_test(
+        lambda u: u.is_authenticated and getattr(u, 'role', None) == 'ADMIN',
+        login_url='/login/'
+    )(view_func)
+
+
 logger = logging.getLogger(__name__)
 
 

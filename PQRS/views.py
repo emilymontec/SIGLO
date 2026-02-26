@@ -1,4 +1,4 @@
-from django.contrib.admin.views.decorators import staff_member_required
+from USERS.decorators import admin_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, redirect, render
@@ -25,13 +25,13 @@ def my_pqrs_list(request):
     return render(request, 'pqrs/my_pqrs_list.html', {'items': items})
 
 
-@staff_member_required
+@admin_required
 def admin_pqrs_list(request):
     items = PQRS.objects.select_related("client").all().order_by("-id")
     return render(request, "pqrs/admin_pqrs_list.html", {"items": items})
 
 
-@staff_member_required
+@admin_required
 def admin_pqrs_edit(request, pqrs_id):
     pq = get_object_or_404(PQRS, pk=pqrs_id)
 

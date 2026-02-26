@@ -1,4 +1,4 @@
-from django.contrib.admin.views.decorators import staff_member_required
+from USERS.decorators import admin_required
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.shortcuts import redirect, render
@@ -82,6 +82,6 @@ def dashboard(request):
     return render(request, "project_info/dashboard.html", {"stages": stages})
 
 
-@staff_member_required
+@admin_required
 def admin_content(request):
     return redirect('dashboard')

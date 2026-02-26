@@ -1,4 +1,4 @@
-from django.contrib.admin.views.decorators import staff_member_required
+from USERS.decorators import admin_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 

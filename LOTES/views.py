@@ -35,7 +35,7 @@ def lot_list_api(request):
     return JsonResponse({"results": data})
 
 
-@staff_member_required
+@admin_required
 def admin_lot_list(request):
     from SALES.models import Purchase, Payment
     lots = Lot.objects.select_related("stage").all().order_by("code")

@@ -68,16 +68,13 @@ def register_view(request):
         logger = logging.getLogger(__name__)
         
         try:
-            esult = send_mailjet_email(
+            result = send_mailjet_email(
                 subject=subject,
                 html_content=html_content,
                 to_email=user.email,
                 to_name=user.get_full_name() or user.username
                 )
             print("Mailjet response:", result.status_code, result.json())
-            
-        except Exception as e:
-            print(f"ERROR CORREO: {type(e).__name__}: {e}")
 
         return render(
             request,

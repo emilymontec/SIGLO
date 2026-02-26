@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'SALES',
     'PQRS',
     'PROJECT_INFO',
-    'django_mailjet',
     'cloudinary',
     'cloudinary_storage',
 ]
@@ -152,7 +151,10 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 # STMP
 import os
 
-EMAIL_BACKEND = 'django_mailjet.backends.MailjetBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'in-v3.mailjet.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('MJ_APIKEY_PUBLIC')
 EMAIL_HOST_PASSWORD = os.environ.get('MJ_APIKEY_PRIVATE')
 DEFAULT_FROM_EMAIL = 'siglo.sys.py@gmail.com'

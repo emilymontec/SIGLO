@@ -73,7 +73,9 @@ def register_view(request):
             email.send()
             
         except Exception as e:
-            logger.error(f"Error enviando correo de activación a {user.email}: {e}")
+            logger.error(f"ERROR CORREO: {type(e).__name__}: {e}")
+            # También imprímelo directo
+            print(f"ERROR CORREO: {type(e).__name__}: {e}")
 
         return render(
             request,

@@ -154,7 +154,6 @@ USE_TZ = True
 # Carpeta donde collectstatic pondrá todos los archivos estáticos (incluyendo admin)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Tus archivos estáticos personalizados (CSS, JS propios del proyecto)
 #STATICFILES_DIRS = [
@@ -172,13 +171,19 @@ EMAIL_HOST_PASSWORD = os.environ.get('MJ_APIKEY_PRIVATE')
 DEFAULT_FROM_EMAIL = 'siglo.sys.py@gmail.com'
 
 # MEDIA
-if not DEBUG:
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.environ.get("CLOUDINARY_NAME"),
-        'API_KEY': os.environ.get("CLOUDINARY_KEY"),
-        'API_SECRET': os.environ.get("CLOUDINARY_SECRET"),
-    }
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get("CLOUDINARY_NAME"),
+    'API_KEY': os.environ.get("CLOUDINARY_KEY"),
+    'API_SECRET': os.environ.get("CLOUDINARY_SECRET"),
+}
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}

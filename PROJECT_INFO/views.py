@@ -82,6 +82,10 @@ def dashboard(request):
     return render(request, "project_info/dashboard.html", {"stages": stages})
 
 
+def error_404_view(request, exception):
+    return render(request, "404.html", status=404)
+
+
 @admin_required
 def admin_content(request):
     return redirect('dashboard')

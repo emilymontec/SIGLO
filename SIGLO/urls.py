@@ -13,5 +13,7 @@ urlpatterns = [
     path('chatbot/', include('CHATBOT.urls')),
 ]
 
+handler404 = 'PROJECT_INFO.views.error_404_view'
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

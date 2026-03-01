@@ -140,8 +140,10 @@
                 están transformando sus ahorros en propiedad raíz.</p>
             <div class="d-flex justify-content-center gap-3">
                 <a href="{% url 'register' %}" class="btn btn-accent px-5">Empezar Ahora</a>
+                {% if not user.is_authenticated or user.role == 'CLIENT' %}
                 <a href="{% url 'pqrs_create' %}"
                     class="btn btn-outline-light px-5 py-3 rounded-3 fw-bold text-uppercase small border-2">Soporte</a>
+                {% endif %}
             </div>
         </div>
     </div>

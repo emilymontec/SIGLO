@@ -1,0 +1,17 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<div style="padding: 20px; background-color: #ffffff; border-radius: 8px;">
+    <h2 style="color: #333;">Hola {{ user_name }},</h2>
+    <p>Hemos recibido tu <strong>{{ pqrs_type }}</strong> con éxito.</p>
+    <p>Nuestro equipo revisará tu mensaje y te responderá lo antes posible.</p>
+    
+    <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #FACC15; margin: 20px 0;">
+        <p style="margin-top: 0;"><strong>Tu mensaje:</strong></p>
+        <p style="font-style: italic;">"{{ message }}"</p>
+    </div>
+    
+    <p>Puedes hacer seguimiento a tu solicitud desde tu perfil en la plataforma.</p>
+    <p>Gracias por confiar en <strong>SIGLO</strong>.</p>
+</div>
+{% endblock %}

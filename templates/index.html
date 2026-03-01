@@ -317,9 +317,16 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'lot_map' %}">Mapa Interactivo</a>
                     </li>
+                    {% if user.is_authenticated and user.role == 'EXECUTIVE' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin_pqrs_list' %}">Gestión PQRS</a>
+                    </li>
+                    {% endif %}
+                    {% if not user.is_authenticated or user.role == 'CLIENT' %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'pqrs_create' %}">Soporte</a>
                     </li>
+                    {% endif %}
                 </ul>
                 <div class="d-flex align-items-center gap-3">
                     {% if user.is_authenticated %}
@@ -351,6 +358,26 @@
             </div>
         </div>
     </nav>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show rounded-4 border-0 shadow-sm" role="alert">
+            <div class="d-flex align-items-center">
+                {% if message.tags == 'success' %}
+                <i class="bi bi-check-circle-fill me-2"></i>
+                {% elif message.tags == 'error' %}
+                <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                {% else %}
+                <i class="bi bi-info-circle-fill me-2"></i>
+                {% endif %}
+                <div>{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <main class="flex-grow-1">
         {% block content %}{% endblock %}

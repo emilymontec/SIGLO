@@ -10,16 +10,6 @@
                 <h1 class="h4 fw-bold text-dark mb-2">Mi perfil</h1>
                 <p class="text-muted small mb-4">Actualiza tu información personal y contraseña de acceso.</p>
 
-                {% if messages %}
-                <div class="mb-3">
-                    {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} small mb-2" role="alert">
-                        {{ message }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
                 <form method="post" novalidate>
                     {% csrf_token %}
 

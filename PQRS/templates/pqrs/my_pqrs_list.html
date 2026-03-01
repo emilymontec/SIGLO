@@ -23,6 +23,7 @@
                         <th class="py-3 ps-4 text-muted extra-small text-uppercase fw-bold tracking-wider">ID Ticket</th>
                         <th class="py-3 text-muted extra-small text-uppercase fw-bold tracking-wider">Servicio</th>
                         <th class="py-3 text-muted extra-small text-uppercase fw-bold tracking-wider">Descripción</th>
+                        <th class="py-3 text-muted extra-small text-uppercase fw-bold tracking-wider">Respuesta</th>
                         <th class="py-3 pe-4 text-end text-muted extra-small text-uppercase fw-bold tracking-wider">Estado</th>
                     </tr>
                 </thead>
@@ -35,7 +36,19 @@
                                 {{ pq.get_type_display }}
                             </span>
                         </td>
-                        <td class="py-3 small text-muted">{{ pq.message|truncatechars:100 }}</td>
+                        <td class="py-3 small text-muted">
+                            <span title="{{ pq.message }}">{{ pq.message|truncatechars:50 }}</span>
+                        </td>
+                        <td class="py-3 small">
+                            {% if pq.response %}
+                            <span class="text-dark fw-medium" title="{{ pq.response }}">
+                                <i class="bi bi-chat-dots me-1 text-accent"></i>
+                                {{ pq.response|truncatechars:50 }}
+                            </span>
+                            {% else %}
+                            <span class="text-muted fst-italic extra-small">Esperando respuesta...</span>
+                            {% endif %}
+                        </td>
                         <td class="py-3 pe-4 text-end">
                             <span class="badge
                                 {% if pq.status == 'OPEN' %}bg-warning text-dark

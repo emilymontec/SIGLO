@@ -1,0 +1,27 @@
+{% extends "emails/base_email.html" %}
+
+{% block content %}
+<div style="padding: 20px; background-color: #ffffff; border-radius: 8px;">
+    <h2 style="color: #333;">Hola {{ user_name }},</h2>
+    <p>Hay una actualización en tu <strong>{{ pqrs_type }}</strong>.</p>
+    
+    <div style="background-color: #f9f9f9; padding: 15px; border-left: 4px solid #FACC15; margin: 20px 0;">
+        <p style="margin-top: 0;"><strong>Estado actual:</strong> 
+            <span style="color: {% if is_closed %}#EF4444{% else %}#10B981{% endif %}; font-weight: bold;">{{ status }}</span>
+        </p>
+        
+        {% if response %}
+        <p><strong>Respuesta de SIGLO:</strong></p>
+        <p style="font-style: italic;">"{{ response }}"</p>
+        {% endif %}
+    </div>
+    
+    {% if is_closed %}
+    <p>Esta solicitud ha sido marcada como cerrada. Si tienes más inquietudes, puedes abrir una nueva PQRS.</p>
+    {% else %}
+    <p>Nuestro equipo sigue trabajando en tu caso. Puedes revisar los detalles completos en la plataforma.</p>
+    {% endif %}
+    
+    <p>Gracias por ser parte de <strong>SIGLO</strong>.</p>
+</div>
+{% endblock %}

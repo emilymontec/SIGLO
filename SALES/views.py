@@ -218,7 +218,8 @@ def register_payment(request, purchase_id):
                     print("Mailjet pago response:", result.status_code, result.json())
                     messages.add_message(
                         request, messages.SUCCESS,
-                        "Pago registrado con éxito. Hemos enviado el comprobante a tu correo electrónico.",
+                        "Pago registrado con éxito. Te hemos enviado el comprobante a tu correo. "
+                        "Si no lo encuentras, revisa tu carpeta de SPAM.",
                         extra_tags='payment_success'
                     )
                 except Exception as e:

@@ -2,7 +2,7 @@ import os
 import logging
 
 from django.contrib import messages
-from django.contrib.auth import login, get_user_model, update_session_auth_hash
+from django.contrib.auth import login, logout, get_user_model, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
@@ -23,13 +23,6 @@ from django.contrib.auth.decorators import user_passes_test
 def admin_required(view_func):
     return user_passes_test(
         lambda u: u.is_authenticated and getattr(u, 'role', None) == 'ADMIN',
-        login_url='/login/'
-    )(view_func)
-
-
-def executive_required(view_func):
-    return user_passes_test(
-        lambda u: u.is_authenticated and getattr(u, 'role', None) in ['ADMIN', 'EXECUTIVE'],
         login_url='/login/'
     )(view_func)
 
@@ -251,3 +244,9 @@ def profile_view(request):
         }
     }
     return render(request, "users/profile.html", context)
+
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, "Has cerrado sesión correctamente.")
+    return redirect("dashboard")

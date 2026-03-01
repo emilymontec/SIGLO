@@ -1,5 +1,5 @@
 from django.template.loader import render_to_string
-from USERS.views import admin_required, executive_required, client_required, send_mailjet_email
+from USERS.views import admin_required, client_required, send_mailjet_email
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -66,13 +66,13 @@ def my_pqrs_list(request):
     return render(request, 'pqrs/my_pqrs_list.html', {'items': items})
 
 
-@executive_required
+@admin_required
 def admin_pqrs_list(request):
     items = PQRS.objects.select_related("client").all().order_by("-id")
     return render(request, "pqrs/admin_pqrs_list.html", {"items": items})
 
 
-@executive_required
+@admin_required
 def admin_pqrs_edit(request, pqrs_id):
     pq = get_object_or_404(PQRS, pk=pqrs_id)
 

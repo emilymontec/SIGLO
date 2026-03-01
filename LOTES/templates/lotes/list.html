@@ -111,7 +111,7 @@
                     </div>
                     {% if lot.status == 'AVAILABLE' %}
                         {% if user.is_authenticated %}
-                            {% if user.role == 'ADMIN' or user.role == 'EXECUTIVE' %}
+                            {% if user.role == 'ADMIN' %}
                             <a href="{% url 'admin_lot_edit' lot.id %}" class="btn btn-outline-dark w-100 fw-bold">Editar Lote</a>
                             {% else %}
                             <a href="{% url 'buy_lot' lot.id %}" class="btn btn-accent w-100 fw-bold">Reservar Activo</a>

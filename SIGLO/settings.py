@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'SALES',
     'PQRS',
     'PROJECT_INFO',
+    'CHATBOT',
     'cloudinary',
     'cloudinary_storage',
 ]

@@ -10,6 +10,7 @@ urlpatterns = [
     path('lotes/', include('LOTES.urls')),
     path('pqrs/', include('PQRS.urls')),
     path('sales/', include('SALES.urls')),
+    path('chatbot/', include('CHATBOT.urls')),
 ]
 
 if settings.DEBUG:
